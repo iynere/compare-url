@@ -1,0 +1,54 @@
+version: 2.1
+
+executors:
+  cli:
+    docker:
+      - image: circleci/circleci-cli:0.1.2709
+
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - lint
+      - validate:
+          requires:
+            - lint
+      - publish-dev:
+          requires:
+            - validate
+          filters:
+            branches:
+              ignore: master
+      - publish-prod:
+          requires:
+            - validate
+          filters:
+            branches:
+              only: master
+
+jobs:
+  lint:
+    docker:
+      - image: singapore/lint-condo
+    steps:
+      - checkout
+      - run: yamllint .
+
+  validate:
+    executor: cli
+    steps:
+      - checkout
+      - run: circleci orb validate src/@orb.yml
+
+  publish-dev:
+    executor: cli
+    steps:
+      - checkout
+      - run: circleci orb publish src/orb.yml iynere/compare-url@dev:alpha
+
+  publish-prod:
+    executor: cli
+    steps:
+      - checkout
+      - run: circleci orb publish promote iynere/compare-url@dev:alpha patch
+
