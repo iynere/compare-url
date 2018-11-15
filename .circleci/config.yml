@@ -51,4 +51,3 @@ jobs:
     steps:
       - checkout
       - run: circleci orb publish promote iynere/compare-url@dev:alpha patch
-
