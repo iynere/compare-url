@@ -5,7 +5,7 @@ description: >
 
 examples:
   simple-monorepo-flow:
-    description: >
+    description: |
       Execute some action only for modified files from this commit
 
       This example presupposes a monorepo of orbs,
@@ -35,7 +35,7 @@ examples:
             - run:
                 name: Publish modified orbs
                 shell: /bin/bash -exo pipefail
-                command: >
+                command: |
                   # save value stored in file to a local env var
                   CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL)
 
@@ -72,7 +72,7 @@ commands:
     steps:
       - run:
           name: Reconstruct CIRCLE_COMPARE_URL
-          command: >
+          command: |
             RETRY=true
             JOB_NUM=$(( $CIRCLE_BUILD_NUM - 1 ))
 
@@ -81,7 +81,6 @@ commands:
               curl --user $CIRCLE_TOKEN: \
                 https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$JOB_NUM \
                 > JOB_OUTPUT
-
 
               if [[ $(grep '"retry_of" : null' JOB_OUTPUT) && \
                 # ignore jobs that were SSH reruns of previous jobs
@@ -121,4 +120,3 @@ commands:
             echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL"
 
             echo $CIRCLE_COMPARE_URL > CIRCLE_COMPARE_URL
-
