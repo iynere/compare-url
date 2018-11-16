@@ -44,7 +44,7 @@ jobs:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish src/orb.yml iynere/compare-url@dev:alpha
+      - run: circleci orb publish src/@orb.yml iynere/compare-url@dev:alpha
 
   publish-prod:
     executor: cli
