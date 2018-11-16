@@ -35,7 +35,7 @@ examples:
             - run:
                 name: Publish modified orbs
                 shell: /bin/bash -exo pipefail
-                command: |
+                command: >
                   # save value stored in file to a local env var
                   CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL)
 
@@ -72,7 +72,7 @@ commands:
     steps:
       - run:
           name: Reconstruct CIRCLE_COMPARE_URL
-          command: |
+          command: >
             RETRY=true
             JOB_NUM=$CIRCLE_PREVIOUS_BUILD_NUM
 
