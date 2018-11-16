@@ -91,16 +91,16 @@ commands:
 
             echo "last pushed commit hash is:" $LAST_PUSHED_COMMIT
 
-            echo "- - - - - - - - - - - -"
+            echo "- - - - - - - - - - - - - - - - - - - - - - - -"
 
             echo "this job's commit hash is:" $CIRCLE_SHA1
 
-            echo "- - - - - - - - - - - -"
+            echo "- - - - - - - - - - - - - - - - - - - - - - - -"
 
             echo "recreated CIRCLE_COMPARE_URL: https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/compare/${LAST_PUSHED_COMMIT:0:12}...${CIRCLE_SHA1:0:12}"
 
-            echo "- - - - - - - - - - - -"
+            echo "- - - - - - - - - - - - - - - - - - - - - - - -"
 
-            echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL..."
+            echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL"
 
             echo "https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/compare/${LAST_PUSHED_COMMIT:0:12}...${CIRCLE_SHA1:0:12}" > CIRCLE_COMPARE_URL
