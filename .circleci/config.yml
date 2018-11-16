@@ -43,7 +43,7 @@ jobs:
       - checkout
       - run: circleci orb publish src/@orb.yml iynere/compare-url@dev:alpha --token $CIRCLE_TOKEN
 
-  publish-prod:
+  promote-prod:
     executor: cli
     steps:
       - checkout
