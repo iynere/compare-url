@@ -1,17 +1,13 @@
 version: 2.1
 
 description: >
-  Reconstruct $CIRCLE_COMPARE_URL env var, for working with monorepos
+  Reconstruct $CIRCLE_COMPARE_URL environment variable
 
 examples:
   simple-monorepo-flow:
     description: |
-      Execute some action only for modified files from this commit
-
-      This example presupposes a monorepo of orbs,
-      of which we only want to publish those with modifications
-
-      See https://discuss.circleci.com/t/does-circleci-2-0-work-with-monorepos
+      Execute some action only for modified files from this commit. This example presupposes a monorepo of orbs,
+      of which we only want to publish those with modifications. See https://discuss.circleci.com/t/does-circleci-2-0-work-with-monorepos
       for details
     usage:
       version: 2.1
@@ -60,7 +56,7 @@ examples:
 commands:
   reconstruct:
     description: >
-      Reconstruct CIRCLE_COMPARE_URL, output it to an eponymous file
+      Reconstruct CIRCLE_COMPARE_URL and output it to an eponymous file (because each step in a CircleCI job receives a fresh shell environment by default, storing it as an environment variable would not typically persist across steps).
 
     parameters:
       circle-token:
