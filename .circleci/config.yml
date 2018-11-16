@@ -16,10 +16,7 @@ workflows:
       - publish-dev:
           requires:
             - validate
-          filters:
-            branches:
-              ignore: master
-      - publish-prod:
+      - promote-prod:
           requires:
             - validate
           filters:
