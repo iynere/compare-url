@@ -41,10 +41,10 @@ jobs:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish src/@orb.yml iynere/compare-url@dev:alpha --token $CIRCLE_TOKEN
+      - run: circleci orb publish src/@orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 --token $CIRCLE_TOKEN
 
   promote-prod:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish promote iynere/compare-url@dev:alpha patch --token $CIRCLE_TOKEN
+      - run: circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 patch --token $CIRCLE_TOKEN
