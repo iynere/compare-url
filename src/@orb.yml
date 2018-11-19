@@ -74,7 +74,7 @@ commands:
 
             while [[ $(echo $RETRY) == true ]]
             do
-              curl --user $CIRCLE_TOKEN: \
+              curl --user <<parameters.circle-token>>: \
                 https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$JOB_NUM \
                 > JOB_OUTPUT
 
@@ -97,7 +97,7 @@ commands:
 
             rm -f JOB_OUTPUT
 
-            LAST_PUSHED_COMMIT=$(curl --user $CIRCLE_TOKEN: \
+            LAST_PUSHED_COMMIT=$(curl --user <<parameters.circle-token>>: \
               https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$JOB_NUM | \
               grep '"commit" : ' | sed -E 's/"commit" ://' | sed -E 's/[[:punct:]]//g' | sed -E 's/ //g')
 
