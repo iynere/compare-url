@@ -7,14 +7,16 @@ CircleCI's 2.1 config processing preview disables the `$CIRCLE_COMPARE_URL` envi
 Originally, and as recreated here, `$CIRCLE_COMPARE_URL` outputs a URL of the following form, slighly different for GitHub vs. Bitbucket projects:
 
 ```
-https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/compare/$COMMIT_1...$COMMIT_2
+# GitHub
+https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/compare/$COMMIT1...$COMMIT2
 
-https://bitbucket.org/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/branches/compare/$COMMIT_1...$COMMIT_2
+# Bitbucket
+https://bitbucket.org/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/branches/compare/$COMMIT1...$COMMIT2
 ```
 
-`$COMMIT_2` always represents the current job's commit (`$CIRCLE_SHA1`). In the most common use case, `$COMMIT_1` will be the most recent previously pushed commit on the same branch as the current job.
+`$COMMIT2` always represents the current job's commit (`$CIRCLE_SHA1`). In the most common use case, `$COMMIT1` will be the most recent previously pushed commit on the same branch as the current job.
 
-If the current branch is new or has only ever had a single commit pushed to it, then `$COMMIT_1` will be the most recent [ancestor commit](https://git-scm.com/docs/git-merge-base) as defined in the `git` specifications (whereas the original `$CIRCLE_COMPARE_URL` environment variable would, in this case, instead output a compare URL containing only `$COMMIT_2`—essentially unusable in the monorepo scenario that this orb addresses).
+If the current branch is new or has only ever had a single commit pushed to it, then `$COMMIT1` will be the most recent [ancestor commit](https://git-scm.com/docs/git-merge-base) as defined in the `git` specifications (whereas the original `$CIRCLE_COMPARE_URL` environment variable would, in this case, instead output a compare URL containing only `$COMMIT2`—essentially unusable in the monorepo scenario that this orb addresses).
 
 ##  Usage
 Declare the orb in your config.yml file:
