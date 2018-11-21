@@ -70,6 +70,16 @@ commands:
           necessary for running git commands
         type: string
         default: ~/project
+      debug:
+        description: >
+          Additional debugging output for folks developing the orb
+        type: boolean
+        default: false
+      debug-steps:
+        description: >
+          Additional debugging steps for folks developing the orb
+        type: steps
+        default: []
 
     steps:
       - run:
@@ -124,7 +134,9 @@ commands:
               done < API_ENDPOINTS_FOR_JOBS_ON_BRANCH
 
               # clean up
-              rm -f API_ENDPOINTS_FOR_JOBS_ON_BRANCH
+              if [[ <<parameters.debug>> == false ]]; then
+                rm -f API_ENDPOINTS_FOR_JOBS_ON_BRANCH
+              fi
 
               # true or false
               echo $BRANCH_IS_NEW
@@ -157,7 +169,7 @@ commands:
 
             ## EXECUTION
 
-            # manually iterate downard through previous jobs
+            # manually iterate through previous jobs
             until [[ $FOUND_BASE_COMPARE_COMMIT == true ]]
             do
 
@@ -258,3 +270,5 @@ commands:
             echo "recreated CIRCLE_COMPARE_URL:" $CIRCLE_COMPARE_URL
             echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL.txt"
             echo $CIRCLE_COMPARE_URL > CIRCLE_COMPARE_URL.txt
+
+      - steps: <<parameters.debug-steps>>
