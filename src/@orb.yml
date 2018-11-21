@@ -89,9 +89,9 @@ commands:
             extract_commit_from_job () {
               # takes $1 (VCS_TYPE) & $2 (a job number)
 
-              curl --globoff --user <<parameters.circle-token>>: \
-              https://circleci.com/api/v1.1/project/$1/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$2 | \
-              grep '"vcs_revision" : ' | sed -E 's/"vcs_revision" ://' | sed -E 's/[[:punct:]]//g' | sed -E 's/ //g'
+              curl --user <<parameters.circle-token>>: \
+                https://circleci.com/api/v1.1/project/$1/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$2 | \
+                grep '"vcs_revision" : ' | sed -E 's/"vcs_revision" ://' | sed -E 's/[[:punct:]]//g' | sed -E 's/ //g'
             }
 
             check_if_branch_is_new () {
@@ -104,12 +104,18 @@ commands:
               # grab URL endpoints for jobs on this branch
               # transform them into single-job API endpoints
               # output them to a file for subsequent iteration
-              curl --globoff --user <<parameters.circle-token>>: https://circleci.com/api/v1.1/project/$1/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH | grep "build_url" | sed -E 's/"build_url" : //' | sed -E 's|/bb/|/api/v1.1/project/bitbucket/|' | sed -E 's|/gh/|/api/v1.1/project/github/|' | sed -E 's/"|,//g' | sed -E 's/ //g' > API_ENDPOINTS_FOR_JOBS_ON_BRANCH
+              curl --user <<parameters.circle-token>>: \
+                https://circleci.com/api/v1.1/project/$1/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH | \
+                grep "\"build_url\" : \"http" | sed -E 's/"build_url" : //' | \
+                sed -E 's|/bb/|/api/v1.1/project/bitbucket/|' | \
+                sed -E 's|/gh/|/api/v1.1/project/github/|' | \
+                sed -E 's/"|,//g' | sed -E 's/ //g' \
+                > API_ENDPOINTS_FOR_JOBS_ON_BRANCH
 
               # loop through each job to compare commit hashes
               while read line
               do
-                if [[ $(curl --globoff --user <<parameters.circle-token>>: $line | grep "\"vcs_revision\" : \"$CIRCLE_SHA1\"") ]]; then
+                if [[ $(curl --user <<parameters.circle-token>>: $line | grep "\"vcs_revision\" : \"$CIRCLE_SHA1\"") ]]; then
                   continue
                 else
                   BRANCH_IS_NEW=false
@@ -144,7 +150,7 @@ commands:
               BRANCH_IS_NEW=true
             else
               echo "----------------------------------------------------------------------------------------------------"
-              echo "$CIRCLE_BRANCH is not a new branch, searching for its most recent previous commit"
+              echo "$CIRCLE_BRANCH is not a new branch, searching for its most recent previous commit..."
               echo "----------------------------------------------------------------------------------------------------"
               BRANCH_IS_NEW=false
             fi
@@ -156,7 +162,7 @@ commands:
             do
 
               # save circle api output to a temp file for reuse
-              curl --globoff --user <<parameters.circle-token>>: \
+              curl --user <<parameters.circle-token>>: \
                 https://circleci.com/api/v1.1/project/$VCS_TYPE/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$JOB_NUM \
                 > JOB_OUTPUT
 
@@ -224,7 +230,7 @@ commands:
                   FOUND_BASE_COMPARE_COMMIT=true
                 else
                   echo "----------------------------------------------------------------------------------------------------"
-                  echo "$JOB_NUM was part of the current workflow, part of a rerun workflow, a retry of a previous job, or from a different branch"
+                  echo "job $JOB_NUM was part of the current workflow, part of a rerun workflow, a retry of a previous job, or from a different branch"
                   echo "----------------------------------------------------------------------------------------------------"
                   JOB_NUM=$(( $JOB_NUM - 1 ))
                   continue
