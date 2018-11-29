@@ -95,8 +95,8 @@ commands:
 
             ## UTILS
 
-            # abstract this logic out, it gets reused a few times
             extract_commit_from_job () {
+              # abstract this logic out, it gets reused a few times
               # takes $1 (VCS_TYPE) & $2 (a job number)
 
               curl --user <<parameters.circle-token>>: \
@@ -115,7 +115,7 @@ commands:
               # transform them into single-job API endpoints
               # output them to a file for subsequent iteration
               curl --user <<parameters.circle-token>>: \
-                https://circleci.com/api/v1.1/project/$1/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH | \
+                https://circleci.com/api/v1.1/project/$1/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH?limit=100 | \
                 grep "\"build_url\" : \"http" | sed -E 's/"build_url" : //' | \
                 sed -E 's|/bb/|/api/v1.1/project/bitbucket/|' | \
                 sed -E 's|/gh/|/api/v1.1/project/github/|' | \
