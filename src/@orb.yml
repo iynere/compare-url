@@ -242,6 +242,7 @@ commands:
 
                   echo "----------------------------------------------------------------------------------------------------"
                   echo "success! job $JOB_NUM was neither part of the current workflow, part of a rerun workflow, a retry of a previous job, nor from a different branch"
+                  echo "----------------------------------------------------------------------------------------------------"
 
                   FOUND_BASE_COMPARE_COMMIT=true
                 else
@@ -272,7 +273,8 @@ commands:
             echo "base compare commit hash is:" $BASE_COMPARE_COMMIT
             echo "this job's commit hash is:" $CIRCLE_SHA1
             echo "----------------------------------------------------------------------------------------------------"
-            echo "recreated CIRCLE_COMPARE_URL:" $CIRCLE_COMPARE_URL
+            echo "recreated CIRCLE_COMPARE_URL:"
+            echo $CIRCLE_COMPARE_URL
             echo "----------------------------------------------------------------------------------------------------"
             echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL.txt"
             echo $CIRCLE_COMPARE_URL > CIRCLE_COMPARE_URL.txt
