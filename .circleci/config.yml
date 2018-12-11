@@ -65,6 +65,8 @@ workflows:
           filters:
             tags:
               only: /release-*/
+            branches:
+              ignore: /.*/
 
       - validate:
           requires:
@@ -72,6 +74,8 @@ workflows:
           filters:
             tags:
               only: /release-*/
+            branches:
+              ignore: /.*/
 
       - publish-dev:
           requires:
@@ -79,6 +83,8 @@ workflows:
           filters:
             tags:
               only: /release-*/
+            branches:
+              ignore: /.*/
 
       - promote-prod:
           name: promote-minor-release
@@ -86,7 +92,7 @@ workflows:
             - publish-dev
           filters:
             branches:
-              only: master
+              ignore: /.*/
             tags:
               only: /release-minor-*/
 
@@ -96,6 +102,6 @@ workflows:
             - publish-dev
           filters:
             branches:
-              only: master
+              ignore: /.*/
             tags:
               only: /release-major-*/
