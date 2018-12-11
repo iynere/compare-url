@@ -39,7 +39,26 @@ jobs:
 
 workflows:
   version: 2
-  test-and-deploy:
+  test-deploy:
+    - lint
+
+    - validate:
+        requires:
+          - lint
+
+    - publish-dev:
+        requires:
+          - validate
+
+    - promote-prod:
+        name: promote-patch-release
+        requires:
+          - publish-dev
+        filters:
+          branches:
+            only: master
+
+  test-deploy-tagged:
     jobs:
       - lint:
           filters:
@@ -59,16 +78,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-
-      - promote-prod:
-          name: promote-patch-release
-          requires:
-            - publish-dev
-          filters:
-            branches:
-              only: master
-            tags:
-              ignore: /.*/
 
       - promote-prod:
           name: promote-minor-release
