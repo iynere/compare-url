@@ -5,6 +5,28 @@ executors:
     docker:
       - image: circleci/circleci-cli:0.1.2709
 
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - lint
+
+      - validate:
+          requires:
+            - lint
+
+      - publish-dev:
+          requires:
+            - validate
+
+      - promote-prod:
+          name: publish-patch-release
+          requires:
+            - publish-dev
+          filters:
+            branches:
+              only: master
+
 jobs:
   lint:
     docker:
@@ -36,72 +58,3 @@ jobs:
     steps:
       - checkout
       - run: circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 <<parameters.release>> --token $CIRCLE_TOKEN
-
-workflows:
-  version: 2
-  test-deploy:
-    jobs:
-      - lint
-
-      - validate:
-          requires:
-            - lint
-
-      - publish-dev:
-          requires:
-            - validate
-
-      - promote-prod:
-          name: promote-patch-release
-          requires:
-            - publish-dev
-          filters:
-            branches:
-              only: master
-
-  test-deploy-tagged:
-    jobs:
-      - lint:
-          filters:
-            tags:
-              only: /release-*/
-            branches:
-              ignore: /.*/
-
-      - validate:
-          requires:
-            - lint
-          filters:
-            tags:
-              only: /release-*/
-            branches:
-              ignore: /.*/
-
-      - publish-dev:
-          requires:
-            - validate
-          filters:
-            tags:
-              only: /release-*/
-            branches:
-              ignore: /.*/
-
-      - promote-prod:
-          name: promote-minor-release
-          requires:
-            - publish-dev
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /release-minor*/
-
-      - promote-prod:
-          name: promote-major-release
-          requires:
-            - publish-dev
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /release-major*/
