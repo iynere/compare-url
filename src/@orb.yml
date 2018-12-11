@@ -271,12 +271,15 @@ commands:
 
             echo "----------------------------------------------------------------------------------------------------"
             echo "base compare commit hash is:" $BASE_COMPARE_COMMIT
+            echo ""
+            echo $BASE_COMPARE_COMMIT > BASE_COMPARE_COMMIT.txt
             echo "this job's commit hash is:" $CIRCLE_SHA1
             echo "----------------------------------------------------------------------------------------------------"
             echo "recreated CIRCLE_COMPARE_URL:"
             echo $CIRCLE_COMPARE_URL
             echo "----------------------------------------------------------------------------------------------------"
             echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL.txt"
+            echo "(BASE_COMPARE_COMMIT has also been stored in your working directory as BASE_COMPARE_COMMIT.txt)"
             echo $CIRCLE_COMPARE_URL > CIRCLE_COMPARE_URL.txt
 
       - steps: <<parameters.debug-steps>>
