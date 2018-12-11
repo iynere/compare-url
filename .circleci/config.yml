@@ -41,15 +41,24 @@ workflows:
   version: 2
   test-and-deploy:
     jobs:
-      - lint
+      - lint:
+          filters:
+            tags:
+              only: /.*/
 
       - validate:
           requires:
             - lint
+          filters:
+            tags:
+              only: /.*/
 
       - publish-dev:
           requires:
             - validate
+          filters:
+            tags:
+              only: /.*/
 
       - promote-prod:
           name: promote-patch-release
