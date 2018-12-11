@@ -40,23 +40,24 @@ jobs:
 workflows:
   version: 2
   test-deploy:
-    - lint
+    jobs:
+      - lint
 
-    - validate:
-        requires:
-          - lint
+      - validate:
+          requires:
+            - lint
 
-    - publish-dev:
-        requires:
-          - validate
+      - publish-dev:
+          requires:
+            - validate
 
-    - promote-prod:
-        name: promote-patch-release
-        requires:
-          - publish-dev
-        filters:
-          branches:
-            only: master
+      - promote-prod:
+          name: promote-patch-release
+          requires:
+            - publish-dev
+          filters:
+            branches:
+              only: master
 
   test-deploy-tagged:
     jobs:
