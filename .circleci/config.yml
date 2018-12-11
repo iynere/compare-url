@@ -64,21 +64,21 @@ workflows:
       - lint:
           filters:
             tags:
-              only: /.*/
+              only: /release-*/
 
       - validate:
           requires:
             - lint
           filters:
             tags:
-              only: /.*/
+              only: /release-*/
 
       - publish-dev:
           requires:
             - validate
           filters:
             tags:
-              only: /.*/
+              only: /release-*/
 
       - promote-prod:
           name: promote-minor-release
@@ -88,7 +88,7 @@ workflows:
             branches:
               only: master
             tags:
-              only: /minor-*/
+              only: /release-minor-*/
 
       - promote-prod:
           name: promote-major-release
@@ -98,4 +98,4 @@ workflows:
             branches:
               only: master
             tags:
-              only: /major-*/
+              only: /release-major-*/
