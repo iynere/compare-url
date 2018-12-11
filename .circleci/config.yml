@@ -94,7 +94,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /release-minor-*/
+              only: /release-minor*/
 
       - promote-prod:
           name: promote-major-release
@@ -104,4 +104,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /release-major-*/
+              only: /release-major*/
