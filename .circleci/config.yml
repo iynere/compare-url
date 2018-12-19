@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  orb-tools: circleci/orb-tools@2.0.2
+
 executors:
   cli:
     docker:
@@ -39,13 +42,18 @@ jobs:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb validate src/@orb.yml
+
+      - orb-tools/pack:
+          source: src
+          destination: orb.yml
+
+      - run: circleci orb validate orb.yml
 
   publish-dev:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish src/@orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 --token $CIRCLE_TOKEN
+      - run: circleci orb publish orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 --token $CIRCLE_TOKEN
 
   promote-prod:
     executor: cli

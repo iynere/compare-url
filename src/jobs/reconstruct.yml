@@ -1,0 +1,49 @@
+description: >
+  Reconstruct CIRCLE_COMPARE_URL in a job,  output it to an eponymous file (because each step in a CircleCI job receives a fresh shell environment by default, storing it as an environment variable would not typically persist across steps), and persist it to a workspace.
+
+executors:
+  ci-base:
+    docker:
+      - image: cibuilds/base
+
+parameters:
+  circle-token:
+    description: >
+      Your CircleCI API token, defaults to $CIRCLE_TOKEN
+    type: env_var_name
+    default: CIRCLE_TOKEN
+
+  project-path:
+    description: >
+      Absolute path to your project's base directory,
+      necessary for running git commands
+    type: string
+    default: ~/project
+
+  debug:
+    description: >
+      Additional debugging output for folks developing the orb
+    type: boolean
+    default: false
+
+  debug-steps:
+    description: >
+      Additional debugging steps for folks developing the orb
+    type: steps
+    default: []
+
+executor: ci-base
+steps:
+  - checkout
+
+  - run: apk add bash curl
+
+  - reconstruct:
+      circle-token: <<parameters.circle-token>>
+      project-path: <<parameters.project-path>>
+      debug: <<parameters.debug>>
+      debug-steps: <<parameters.debug-steps>>
+
+  - persist_to_workspace:
+      root: .
+      paths: CIRCLE_COMPARE_URL.txt
