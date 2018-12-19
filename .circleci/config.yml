@@ -35,25 +35,32 @@ workflows:
             - lint
 
       - publish-dev:
+        name: publish-dev-from-non-master-branch
           requires:
             - validate
+          filters:
+            branches:
+              ignore: master
+
+      - publish-dev:
+          name: publish-dev-from-master-branch
+          master: true
+          requires:
+            - validate
+          filters:
+            branches:
+              only: master
 
       - trigger-integration:
           name: trigger-integration-dev
           requires:
-            - publish-dev
-          filters:
-            branches:
-              ignore: master
+            - publish-dev-from-non-master-branch
 
       - trigger-integration:
           name: trigger-integration-master
           integration-branch: master
           requires:
-            - publish-dev
-          filters:
-            branches:
-              only: master
+            - publish-dev-from-master-branch
 
   integrate-and-deploy:
     jobs:
@@ -64,6 +71,11 @@ workflows:
           filters:
             branches:
               only: /integration-.*/
+
+          pre-steps:
+            - add_ssh_keys:
+                fingerprints:
+                  - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
 
           debug-steps:
             - run:
@@ -96,6 +108,24 @@ workflows:
                   else
                     echo "somehow the values produced by the orb's job and command are not the same; there is probably something wrong with this iteration of the orb"
                     exit 1
+                  fi
+
+            - run:
+                when: always
+                name: git config
+                command: |
+                  git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+                  git config --global user.name "$CIRCLE_USERNAME"
+
+            - run:
+                when: always
+                name: cleanup branch
+                command: |
+                  # remove remote branch, if integration tests were triggered by a non-master-branch commit;
+                  # otherwise, remote branch will be removed at the end of the dev-promote-prod job
+
+                  if [[ $(echo $CIRCLE_BRANCH | grep "integration-dev") ]]; then
+                    git push origin --delete $CIRCLE_BRANCH
                   fi
 
       - dev-promote-prod:
@@ -146,6 +176,10 @@ jobs:
 
   publish-dev:
     executor: cli
+    parameters:
+      master:
+        type: boolean
+        default: false
     steps:
       - checkout
 
@@ -153,12 +187,17 @@ jobs:
           at: workspace
 
       - run:
-          name: publish w/branch & sha (for transparency)
+          name: always publish w/branch & sha (for transparency)
           command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
       - run:
-          name: publish alpha (for immediate integration testing)
+          name: always publish alpha (for immediate integration testing)
           command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:alpha --token $CIRCLE_TOKEN
+
+      - when:
+          condition: <<parameters.master>>
+          name: publish w/just sha, for possible prod promotion (assuming tests pass)
+          command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
       - store_artifacts:
           path: workspace/orb.yml
@@ -198,6 +237,10 @@ jobs:
     steps:
       - checkout
 
+      - add_ssh_keys:
+          fingerprints:
+            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
+
       - circle-compare-url/reconstruct:
           debug: true
 
@@ -211,27 +254,19 @@ jobs:
             echo "Commit range: $COMMIT_RANGE"
 
             if [[ $(git diff $COMMIT_RANGE --name-status | grep "src/") ]]; then
-              circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
+              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
             else
-              circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
             fi
 
-  cleanup:
-    executor: ci-base
-    steps:
-      - checkout
+        - run:
+            when: always
+            name: git config
+            command: |
+              git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+              git config --global user.name "$CIRCLE_USERNAME"
 
-      - add_ssh_keys:
-          fingerprints:
-            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
-
-      - run:
-          name: git config
-          command: |
-            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
-            git config --global user.name "$CIRCLE_USERNAME"
-
-      - run:
-          name: delete remote branch
-          command: |
-            git push origin --delete $CIRCLE_BRANCH
+        - run:
+            when: always
+            name: cleanup branch
+            command: git push origin --delete $CIRCLE_BRANCH
