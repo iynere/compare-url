@@ -24,12 +24,6 @@ parameters:
     type: boolean
     default: false
 
-  debug-steps:
-    description: >
-      Additional debugging steps for folks developing the orb
-    type: steps
-    default: []
-
 steps:
   - run:
       name: Reconstruct CIRCLE_COMPARE_URL
@@ -238,5 +232,3 @@ steps:
       paths:
         - CIRCLE_COMPARE_URL.txt
         - BASE_COMPARE_COMMIT.txt
-
-  - steps: <<parameters.debug-steps>>

@@ -9,7 +9,7 @@ usage:
   version: 2.1
 
   orbs:
-    compare-url: iynere/compare-url@1.0.0
+    compare-url: iynere/compare-url@0.2
 
   workflows:
     version: 2
