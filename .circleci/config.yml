@@ -35,12 +35,12 @@ workflows:
             - lint
 
       - publish-dev:
-        name: publish-dev-from-non-master-branch
+          name: publish-dev-from-non-master-branch
           requires:
             - validate
           filters:
             branches:
-              ignore: master
+                ignore: master
 
       - publish-dev:
           name: publish-dev-from-master-branch
