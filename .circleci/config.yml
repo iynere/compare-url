@@ -54,7 +54,8 @@ jobs:
 
       - persist_to_workspace:
           root: .
-          path: orb.yml
+          paths:
+            - orb.yml
 
   publish-dev:
     executor: cli
