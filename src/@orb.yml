@@ -62,8 +62,8 @@ commands:
       circle-token:
         description: >
           Your CircleCI API token, defaults to $CIRCLE_TOKEN
-        type: string
-        default: $CIRCLE_TOKEN
+        type: env_var_name
+        default: CIRCLE_TOKEN
       project-path:
         description: >
           Absolute path to your project's base directory,
@@ -283,3 +283,14 @@ commands:
             echo $CIRCLE_COMPARE_URL > CIRCLE_COMPARE_URL.txt
 
       - steps: <<parameters.debug-steps>>
+
+  jobs:
+    reconstruct:
+      docker:
+        - image: cibuilds/base
+      steps:
+        - checkout
+
+        - run: apk add bash curl
+
+        - reconstruct
