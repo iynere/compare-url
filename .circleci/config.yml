@@ -1,15 +1,34 @@
 version: 2.1
 
+orbs:
+  orb-tools: circleci/orb-tools@2.0.2
+  circle-compare-url-test: iynere/compare-url@dev:alpha
+  circle-compare-url: iynere/compare-url@0.1.10
+
 executors:
+  ci-base:
+    resource_class: small
+    docker:
+      - image: cibuilds/base
+
   cli:
+    resource_class: small
     docker:
       - image: circleci/circleci-cli:0.1.2709
 
+  lint-condo:
+    resource_class: small
+    docker:
+      - image: singapore/lint-condo
+
 workflows:
   version: 2
-  test-and-deploy:
+  build-and-test:
     jobs:
-      - lint
+      - lint:
+          filters:
+            branches:
+              ignore: /integration-.*/
 
       - validate:
           requires:
@@ -19,18 +38,85 @@ workflows:
           requires:
             - validate
 
-      - promote-prod:
-          name: publish-patch-release
+      - trigger-integration:
+          name: trigger-integration-dev
+          requires:
+            - publish-dev
+
+      - trigger-integration:
+          name: trigger-integration-master
+          integration-branch: master
           requires:
             - publish-dev
           filters:
             branches:
               only: master
 
+  integrate-and-deploy:
+    jobs:
+      - circle-compare-url-test/reconstruct:
+          name: integration-test
+          resource-class: small
+          debug: true
+          debug-steps:
+            - run:
+                name: copy job output for later comparision
+                command: |
+                  cp BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-job.txt
+                  cp CIRCLE_COMPARE_URL.txt CIRCLE_COMPARE_URL-job.txt
+
+            - circle-compare-url-test/reconstruct:
+                debug: true
+
+            - run:
+                name: copy command output for later comparision
+                command: |
+                  mv BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-command.txt
+                  cp CIRCLE_COMPARE_URL.txt CIRCLE_COMPARE_URL-command.txt
+
+            - run:
+                name: compare output from job & command
+                command: |
+                  JOB_BASE_COMMIT=$(cat BASE_COMPARE_COMMIT-job.txt)
+                  JOB_COMPARE_URL=$(cat CIRCLE_COMPARE_URL-job.txt)
+
+                  COMMAND_BASE_COMMIT=$(cat BASE_COMPARE_COMMIT-command.txt)
+                  COMMAND_COMPARE_URL=$(cat CIRCLE_COMPARE_URL-command.txt)
+
+                  if [[ $JOB_BASE_COMMIT == $COMMAND_BASE_COMMIT && \
+                    $JOB_COMPARE_URL == $COMMAND_COMPARE_URL ]]; then
+                    echo "job & command output are equal; orb seems to be working as expected"
+                  else
+                    echo "somehow the values produced by the orb's job and command are not the same; there is probably something wrong with this iteration of the orb"
+                    exit 1
+                  fi
+          filters:
+            branches:
+              only: /integration-.*/
+
+      - dev-promote-prod:
+          requires:
+            - integration-test
+          filters:
+            branches:
+              only: /integration-master-.*/
+
+      - cleanup:
+          name: cleanup-dev
+          requires:
+            - integration-test
+          filters:
+            branches:
+              only: /integration-.*/
+
+      - cleanup:
+          name: cleanup-master
+          requires:
+            - dev-promote-prod
+
 jobs:
   lint:
-    docker:
-      - image: singapore/lint-condo
+    executor: lint-condo
     steps:
       - checkout
       - run: yamllint .
@@ -39,22 +125,109 @@ jobs:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb validate src/@orb.yml
+
+      - orb-tools/pack:
+          source: src
+          destination: orb.yml
+
+      - run: circleci orb validate orb.yml
+
+      - store_artifacts:
+          path: orb.yml
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - orb.yml
 
   publish-dev:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish src/@orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 --token $CIRCLE_TOKEN
 
-  promote-prod:
-    executor: cli
+      - attach_workspace:
+          at: workspace
+
+      - run:
+          name: publish w/branch & sha (for transparency)
+          command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+
+      - run:
+          name: publish alpha (for immediate integration testing)
+          command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:alpha --token $CIRCLE_TOKEN
+
+      - store_artifacts:
+          path: workspace/orb.yml
+
+  trigger-integration:
+    executor: ci-base
     parameters:
-      release:
+      integration-branch:
         type: enum
-        default: "patch"
-        enum: ["patch", "minor", "major"]
-
+        enum: ["dev", master]
+        default: "dev"
     steps:
       - checkout
-      - run: circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 <<parameters.release>> --token $CIRCLE_TOKEN
+
+      - add_ssh_keys:
+          fingerprints:
+            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
+
+      - run:
+          name: git config
+          command: |
+            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+            git config --global user.name "$CIRCLE_USERNAME"
+
+      - run: |
+          if [[ $CIRCLE_BRANCH == "master" ]]; then
+            INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-${CIRCLE_SHA1:0:7}
+          else
+            INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}
+          fi
+
+          git checkout -b $INTEGRATION_BRANCH
+          git push origin $INTEGRATION_BRANCH
+
+  dev-promote-prod:
+    executor: cli
+    steps:
+      - checkout
+
+      - circle-compare-url/reconstruct:
+          debug: true
+
+      - run:
+          name: publish minor release if src/ modified, otherwise  patch
+          command: |
+            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+
+            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+
+            echo "Commit range: $COMMIT_RANGE"
+
+            if [[ $(git diff $COMMIT_RANGE --name-status | grep "src/") ]]; then
+              circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
+            else
+              circleci orb publish promote iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+            fi
+
+  cleanup:
+    executor: ci-base
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
+
+      - run:
+          name: git config
+          command: |
+            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+            git config --global user.name "$CIRCLE_USERNAME"
+
+      - run:
+          name: delete remote branch
+          command: |
+            git push origin --delete $CIRCLE_BRANCH

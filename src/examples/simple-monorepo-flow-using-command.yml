@@ -1,0 +1,52 @@
+description: >
+  Execute some action only for modified files from this commit.
+  This example presupposes a monorepo of orbs, of which we only want
+  to publish those with modifications. (See
+  https://discuss.circleci.com/t/does-circleci-2-0-work-with-monorepos
+  for details.)
+
+usage:
+  version: 2.1
+
+  orbs:
+    compare-url: iynere/compare-url@1.0.0
+
+  workflows:
+    version: 2
+    publish-orbs:
+      jobs:
+        - publish
+
+  jobs:
+    publish:
+      docker:
+        - image: circleci/circleci-cli
+      steps:
+        - checkout
+
+        - compare-url/reconstruct
+
+        - run:
+            name: Publish modified orbs
+            shell: /bin/bash -exo pipefail
+            command: |
+              # save value stored in file to a local env var
+              CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+
+              COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+
+              echo "Commit range: $COMMIT_RANGE"
+
+              for ORB in folder-containing-orb-subdirs/*/; do
+
+                orbname=$(basename $ORB)
+
+                if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
+
+                  echo "publishing ${orbname}"
+
+                  circleci orb publish ${ORB}/orb.yml namespace/${orbname}@version
+                else
+                  echo "${orbname} not modified; no need to publish"
+                fi
+              done
