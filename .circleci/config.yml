@@ -40,7 +40,7 @@ workflows:
             - validate
           filters:
             branches:
-                ignore: master
+              ignore: master
 
       - publish-dev:
           name: publish-dev-from-master-branch
@@ -183,8 +183,10 @@ jobs:
 
       - when:
           condition: <<parameters.master>>
-          name: publish w/just sha, for possible prod promotion (assuming tests pass)
-          command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+          steps:
+            - run:
+                name: publish w/just sha, for possible prod promotion (assuming tests pass)
+                command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
       - store_artifacts:
           path: workspace/orb.yml
