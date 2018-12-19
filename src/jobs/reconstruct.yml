@@ -1,5 +1,8 @@
 description: >
-  Reconstruct CIRCLE_COMPARE_URL in a job,  output it to an eponymous file (because each step in a CircleCI job receives a fresh shell environment by default, storing it as an environment variable would not typically persist across steps), and persist it to a workspace.
+  Reconstruct CIRCLE_COMPARE_URL in a job,  output it to an eponymous
+  file (because each step in a CircleCI job receives a fresh shell
+  environment by default, storing it as an environment variable would
+  not typically persist across steps), and persist it to a workspace.
 
 parameters:
   circle-token:
@@ -38,7 +41,3 @@ steps:
       project-path: <<parameters.project-path>>
       debug: <<parameters.debug>>
       debug-steps: <<parameters.debug-steps>>
-
-  - persist_to_workspace:
-      root: .
-      paths: CIRCLE_COMPARE_URL.txt

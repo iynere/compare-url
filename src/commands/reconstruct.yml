@@ -1,8 +1,8 @@
 description: >
-  Reconstruct CIRCLE_COMPARE_URL and output it to an eponymous file
-  (because each step in a CircleCI job receives a fresh shell
+  Reconstruct CIRCLE_COMPARE_URL in a command, output it to an eponymous
+  file (because each step in a CircleCI job receives a fresh shell
   environment by default, storing it as an environment variable would
-  not typically persist across steps).
+  not typically persist across steps), and persist it to a workspace.
 
 parameters:
   circle-token:
@@ -230,5 +230,13 @@ steps:
         echo "outputting CIRCLE_COMPARE_URL to a file in your working directory, called CIRCLE_COMPARE_URL.txt"
         echo "(BASE_COMPARE_COMMIT has also been stored in your working directory as BASE_COMPARE_COMMIT.txt)"
         echo $CIRCLE_COMPARE_URL > CIRCLE_COMPARE_URL.txt
+        echo "----------------------------------------------------------------------------------------------------"
+        echo "next: both CIRCLE_COMPARE_URL.txt and BASE_COMPARE_COMMIT.txt will be persisted to a workspace, in case they are needed in later jobs"
+
+  - persist_to_workspace:
+      root: .
+      paths:
+        - CIRCLE_COMPARE_URL.txt
+        - BASE_COMPARE_COMMIT.txt
 
   - steps: <<parameters.debug-steps>>
