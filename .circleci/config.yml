@@ -52,11 +52,19 @@ jobs:
       - store_artifacts:
           path: orb.yml
 
+      - persist_to_workspace:
+          root: .
+          path: orb.yml
+
   publish-dev:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 --token $CIRCLE_TOKEN
+
+      - attach_workspace:
+          at: workspace
+
+      - run: circleci orb publish workspace/orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-$CIRCLE_SHA1 --token $CIRCLE_TOKEN
 
   promote-prod:
     executor: cli
