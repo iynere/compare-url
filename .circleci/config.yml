@@ -42,7 +42,7 @@ workflows:
 
       - trigger-integration:
           name: trigger-integration-master
-          tag: master
+          integration-branch: master
           requires:
             - publish-dev
           filters:
@@ -52,7 +52,7 @@ workflows:
   integrate-and-deploy:
     jobs:
       - circle-compare-url-test/reconstruct:
-          name: integration-test-dev
+          name: integration-test
           resource-class: small
           debug: true
           debug-steps:
@@ -60,31 +60,14 @@ workflows:
                 debug: true
           filters:
             branches:
-              ignore: /.*/
-            tags:
               only: /integration-.*/
-
-      - circle-compare-url-test/reconstruct:
-          name: integration-test-master
-          resource-class: small
-          debug: true
-          debug-steps:
-            - circle-compare-url-test/reconstruct:
-                debug: true
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-.*/
 
       - dev-promote-prod:
           requires:
-            - integration-test-master
+            - integration-test
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /master-.*/
+              only: /integration-master-.*/
 
 jobs:
   lint:
@@ -134,10 +117,10 @@ jobs:
   trigger-integration:
     executor: ci-base
     parameters:
-      tag:
+      integration-branch:
         type: enum
-        default: "integration"
-        enum: ["integration", master]
+        enum: ["dev", master]
+        default: "dev"
     steps:
       - checkout
 
@@ -152,9 +135,14 @@ jobs:
             git config --global user.name "$CIRCLE_USERNAME"
 
       - run: |
-          INTEGRATION_TAG=<<parameters.tag>>-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}
-          git tag $INTEGRATION_TAG
-          git push origin $INTEGRATION_TAG
+          if [[ $CIRCLE_BRANCH == "master" ]]; then
+            INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-${CIRCLE_SHA1:0:7}
+          else
+            INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}
+          fi
+
+          git checkout -b $INTEGRATION_BRANCH
+          git push
 
   dev-promote-prod:
     executor: cli
