@@ -135,19 +135,6 @@ workflows:
             branches:
               only: /integration-master-.*/
 
-      - cleanup:
-          name: cleanup-dev
-          requires:
-            - integration-test
-          filters:
-            branches:
-              only: /integration-dev-.*/
-
-      - cleanup:
-          name: cleanup-master
-          requires:
-            - dev-promote-prod
-
 jobs:
   lint:
     executor: lint-condo
@@ -245,7 +232,7 @@ jobs:
           debug: true
 
       - run:
-          name: publish minor release if src/ modified, otherwise  patch
+          name: publish minor release if src/ modified, otherwise patch
           command: |
             CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
 
@@ -259,14 +246,14 @@ jobs:
               circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
             fi
 
-        - run:
-            when: always
-            name: git config
-            command: |
-              git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
-              git config --global user.name "$CIRCLE_USERNAME"
+      - run:
+          when: always
+          name: git config
+          command: |
+            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+            git config --global user.name "$CIRCLE_USERNAME"
 
-        - run:
-            when: always
-            name: cleanup branch
-            command: git push origin --delete $CIRCLE_BRANCH
+      - run:
+          when: always
+          name: cleanup branch
+          command: git push origin --delete $CIRCLE_BRANCH
