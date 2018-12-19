@@ -18,6 +18,14 @@ parameters:
     type: string
     default: ~/project
 
+  resource-class:
+    description: >
+      Run this job with a smaller resource_class option, if a given
+      project has access to configurable resources.
+    type: enum
+    default: "medium"
+    enum: ["small", "medium"]
+
   debug:
     description: >
       Additional debugging output for folks developing the orb
@@ -31,6 +39,7 @@ parameters:
     default: []
 
 executor: ci-base
+resource_class: <<parameters.resource-class>>
 steps:
   - checkout
 
