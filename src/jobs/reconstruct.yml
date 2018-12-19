@@ -1,11 +1,6 @@
 description: >
   Reconstruct CIRCLE_COMPARE_URL in a job,  output it to an eponymous file (because each step in a CircleCI job receives a fresh shell environment by default, storing it as an environment variable would not typically persist across steps), and persist it to a workspace.
 
-executors:
-  ci-base:
-    docker:
-      - image: cibuilds/base
-
 parameters:
   circle-token:
     description: >
