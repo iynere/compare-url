@@ -142,7 +142,7 @@ jobs:
           fi
 
           git checkout -b $INTEGRATION_BRANCH
-          git push
+          git push origin $INTEGRATION_BRANCH
 
   dev-promote-prod:
     executor: cli
