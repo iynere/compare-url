@@ -49,7 +49,7 @@ workflows:
 
 
 
-### Parameters
+## Parameters
 The orb's command and job both take three optional parameters:
 
 | Parameter | Type | Default | Description |
@@ -57,6 +57,12 @@ The orb's command and job both take three optional parameters:
 | `circle-token` | string | `$CIRCLE_TOKEN` | Your CircleCI API token, defaults to `$CIRCLE_TOKEN` |
 | `project-path` | string | `~/project` | Absolute path to your project's base directory, necessary for running `git` commands |
 | `debug` | boolean | `false` | Additional debugging output for folks developing the orb |
+
+Its job also takes an optional fourth paramater, which allows users to run the job in a [smaller container](https://circleci.com/docs/2.0/configuration-reference/#resource_class) to conserve resources:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `resource-class` | enum | `medium` | Container size for `reconstruct` job (`["small", "medium"]`)
 
 Refer to CircleCI's [Reusing Config](https://circleci.com/docs/2.0/reusing-config/#using-the-parameters-declaration) documentation for additional information about parameters.
 
