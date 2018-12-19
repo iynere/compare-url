@@ -32,7 +32,7 @@ workflows:
 
       - validate:
           requires:
-            - lintr
+            - lint
 
       - publish-dev:
           requires:
