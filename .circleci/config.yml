@@ -111,7 +111,7 @@ workflows:
             - integration-test
           filters:
             branches:
-              only: /integration-.*/
+              only: /integration-dev-.*/
 
       - cleanup:
           name: cleanup-master
