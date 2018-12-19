@@ -49,6 +49,9 @@ jobs:
 
       - run: circleci orb validate orb.yml
 
+      - store_artifacts:
+          path: orb.yml
+
   publish-dev:
     executor: cli
     steps:
