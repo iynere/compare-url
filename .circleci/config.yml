@@ -25,7 +25,10 @@ workflows:
   version: 2
   build-and-test:
     jobs:
-      - lint
+      - lint:
+          filters:
+            branches:
+              ignore: /integration-.*/
 
       - validate:
           requires:
@@ -56,8 +59,29 @@ workflows:
           resource-class: small
           debug: true
           debug-steps:
+            - run: |
+                cp BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-job.txt
+                cp CIRCLE_COMPARE_URL.txt CIRCLE_COMPARE_URL-job.txt
             - circle-compare-url-test/reconstruct:
                 debug: true
+            - run: |
+                mv BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-command.txt
+                cp CIRCLE_COMPARE_URL.txt CIRCLE_COMPARE_URL-command.txt
+
+            - run: |
+                JOB_BASE_COMMIT=$(cat BASE_COMPARE_COMMIT-job.txt)
+                JOB_COMPARE_URL=$(cat CIRCLE_COMPARE_URL-job.txt)
+
+                COMMAND_BASE_COMMIT=$(cat BASE_COMPARE_COMMIT-command.txt)
+                COMMAND_COMPARE_URL=$(cat CIRCLE_COMPARE_URL-command.txt)
+
+                if [[ $JOB_BASE_COMMIT == $COMMAND_BASE_COMMIT && \
+                  $JOB_COMPARE_URL == $COMMAND_COMPARE_URL ]]; then
+                  echo "jobs & commands both working as expected"
+                else
+                  echo "somehow the values produced by the orb's job and command are not the same; there is probably something wrong with this iteration of the orb"
+                  exit 1
+                fi
           filters:
             branches:
               only: /integration-.*/
