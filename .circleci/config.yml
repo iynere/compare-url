@@ -30,6 +30,26 @@ workflows:
             branches:
               only: master
 
+      - promote-prod:
+          name: publish-minor-release
+          requires:
+            - publish-dev
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*minor.*/
+
+      - promote-prod:
+          name: publish-major-release
+          requires:
+            - publish-dev
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*major.*/
+
 jobs:
   lint:
     docker:
