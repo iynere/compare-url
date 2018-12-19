@@ -32,12 +32,6 @@ parameters:
     type: boolean
     default: false
 
-  debug-steps:
-    description: >
-      Additional debugging steps for folks developing the orb
-    type: steps
-    default: []
-
 executor: ci-base
 resource_class: <<parameters.resource-class>>
 steps:
@@ -49,4 +43,3 @@ steps:
       circle-token: <<parameters.circle-token>>
       project-path: <<parameters.project-path>>
       debug: <<parameters.debug>>
-      debug-steps: <<parameters.debug-steps>>

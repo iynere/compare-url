@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   orb-tools: circleci/orb-tools@2.0.2
   circle-compare-url-test: iynere/compare-url@dev:alpha
-  circle-compare-url: iynere/compare-url@0.1.10
+  circle-compare-url: iynere/compare-url@0.1.11
 
 executors:
   ci-base:
@@ -35,7 +35,7 @@ workflows:
             - lint
 
       - publish-dev:
-          name: publish-dev-from-non-master-branch
+          name: publish-dev-from-non-master
           requires:
             - validate
           filters:
@@ -43,7 +43,7 @@ workflows:
               ignore: master
 
       - publish-dev:
-          name: publish-dev-from-master-branch
+          name: publish-dev-from-master
           master: true
           requires:
             - validate
@@ -54,13 +54,13 @@ workflows:
       - trigger-integration:
           name: trigger-integration-dev
           requires:
-            - publish-dev-from-non-master-branch
+            - publish-dev-from-non-master
 
       - trigger-integration:
           name: trigger-integration-master
           integration-branch: master
           requires:
-            - publish-dev-from-master-branch
+            - publish-dev-from-master
 
   integrate-and-deploy:
     jobs:
@@ -77,7 +77,7 @@ workflows:
                 fingerprints:
                   - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
 
-          debug-steps:
+          post-steps:
             - run:
                 name: copy job output for later comparision
                 command: |
