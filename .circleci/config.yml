@@ -234,7 +234,7 @@ jobs:
           debug: true
 
       - run:
-          name: publish minor release if src/ modified, otherwise patch
+          name: major release if changes to src/commands or src/jobs, minor if to src/examples or src/@orb.yml, otherwise patch
           command: |
             CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
 
@@ -242,7 +242,9 @@ jobs:
 
             echo "Commit range: $COMMIT_RANGE"
 
-            if [[ $(git diff $COMMIT_RANGE --name-status | grep "src/") ]]; then
+            if [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/commands" -e "src/jobs") ]]; then
+              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} major --token $CIRCLE_TOKEN
+            elif [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/examples" -e "src/@orb.yml") ]]; then
               circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
             else
               circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
