@@ -16,9 +16,6 @@ https://bitbucket.org/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/branches
 
 If the current branch is new or has only ever had a single commit pushed to it, then `$COMMIT1` will be the most recent [ancestor commit](https://git-scm.com/docs/git-merge-base) as defined in the `git` specifications (whereas the original `$CIRCLE_COMPARE_URL` environment variable would, in this case, instead output a compare URL containing only `$COMMIT2`—essentially unusable in the monorepo scenario that this orb addresses).
 
-### Implementation
-
-
 ##  Usage
 Declare the orb in your config.yml file:
 
