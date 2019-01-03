@@ -51,8 +51,8 @@ The orb's command and job both take three optional parameters:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `circle-token` | `env_var_name` | `CIRCLE_TOKEN` | Name of environment variable storing your CircleCI API token, defaults to `CIRCLE_TOKEN` |
-| `project-path` | `string` | `~/project` | Absolute path to your project's base directory, necessary for running `git` commands |
+| `circle-token` | `env_var_name` | `CIRCLE_TOKEN` | Name of environment variable storing your CircleCI API token |
+| `project-path` | `string` | `~/project` | Absolute path to your project's base directory, necessary for `git` commands |
 | `debug` | boolean | `false` | Additional debugging output for folks developing the orb |
 
 Its job also takes an optional fourth paramater, which allows users to run the job in a [smaller container](https://circleci.com/docs/2.0/configuration-reference/#resource_class) to conserve resources:
