@@ -1,4 +1,4 @@
-# Compare URL Orb
+# Compare URL Orb [![CircleCI status](https://circleci.com/gh/iynere/compare-url-orb.svg "CircleCI status")](https://circleci.com/gh/iynere/compare-url-orb)
 CircleCI's 2.1 config processing preview disables the `$CIRCLE_COMPARE_URL` environment variable, useful when working with monorepo projects. This orb manually recreates (and slightly improves!) it.
 
 ## Functionality
@@ -15,9 +15,6 @@ https://bitbucket.org/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/branches
 `$COMMIT2` always represents the current job's commit (`$CIRCLE_SHA1`). In the most common use case, `$COMMIT1` will be the most recent previously pushed commit on the same branch as the current job.
 
 If the current branch is new or has only ever had a single commit pushed to it, then `$COMMIT1` will be the most recent [ancestor commit](https://git-scm.com/docs/git-merge-base) as defined in the `git` specifications (whereas the original `$CIRCLE_COMPARE_URL` environment variable would, in this case, instead output a compare URL containing only `$COMMIT2`—essentially unusable in the monorepo scenario that this orb addresses).
-
-### Implementation
-
 
 ##  Usage
 Declare the orb in your config.yml file:
@@ -54,15 +51,15 @@ The orb's command and job both take three optional parameters:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `circle-token` | string | `$CIRCLE_TOKEN` | Your CircleCI API token, defaults to `$CIRCLE_TOKEN` |
-| `project-path` | string | `~/project` | Absolute path to your project's base directory, necessary for running `git` commands |
+| `circle-token` | `env_var_name` | `CIRCLE_TOKEN` | Name of environment variable storing your CircleCI API token |
+| `project-path` | `string` | `~/project` | Absolute path to your project's base directory, for running `git` commands |
 | `debug` | boolean | `false` | Additional debugging output for folks developing the orb |
 
 Its job also takes an optional fourth paramater, which allows users to run the job in a [smaller container](https://circleci.com/docs/2.0/configuration-reference/#resource_class) to conserve resources:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `resource-class` | enum | `medium` | Container size for `reconstruct` job (`["small", "medium"]`)
+| `resource-class` | `enum` | `medium` | Container size for `reconstruct` job (`["small", "medium"]`)
 
 Refer to CircleCI's [Reusing Config](https://circleci.com/docs/2.0/reusing-config/#using-the-parameters-declaration) documentation for additional information about parameters.
 
