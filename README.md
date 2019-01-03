@@ -1,4 +1,4 @@
-# Compare URL Orb
+# Compare URL Orb [![CircleCI status](https://circleci.com/gh/iynere/compare-url-orb.svg "CircleCI status")](https://circleci.com/gh/iynere/compare-url-orb)
 CircleCI's 2.1 config processing preview disables the `$CIRCLE_COMPARE_URL` environment variable, useful when working with monorepo projects. This orb manually recreates (and slightly improves!) it.
 
 ## Functionality
