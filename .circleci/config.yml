@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   orb-tools: circleci/orb-tools@2.0.2
   circle-compare-url-test: iynere/compare-url@dev:alpha
-  circle-compare-url: iynere/compare-url@0.1.11
+  circle-compare-url: iynere/compare-url@0.4.4
 
 executors:
   ci-base:
@@ -14,7 +14,7 @@ executors:
   cli:
     resource_class: small
     docker:
-      - image: circleci/circleci-cli:0.1.2709
+      - image: circleci/circleci-cli
 
   lint-condo:
     resource_class: small
