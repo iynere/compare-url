@@ -1,66 +1,56 @@
 version: 2.1
 
 orbs:
-  orb-tools: circleci/orb-tools@2.0.2
+  orb-tools: circleci/orb-tools@6.0.0
   circle-compare-url-test: iynere/compare-url@dev:alpha
-  circle-compare-url: iynere/compare-url@0.4.4
-
-executors:
-  ci-base:
-    resource_class: small
-    docker:
-      - image: cibuilds/base
-
-  cli:
-    resource_class: small
-    docker:
-      - image: circleci/circleci-cli
-
-  lint-condo:
-    resource_class: small
-    docker:
-      - image: singapore/lint-condo
+  circle-compare-url: iynere/compare-url@0.4.5
 
 workflows:
   version: 2
   build-and-test:
     jobs:
-      - lint:
+      - orb-tools/lint:
           filters:
             branches:
               ignore: /integration-.*/
 
-      - validate:
+      - orb-tools/pack:
+          name: validate
           requires:
             - lint
 
-      - publish-dev:
-          name: publish-dev-from-non-master
+      - orb-tools/publish-dev:
+          name: publish-dev
+          orb-name: iynere/compare-url
           requires:
             - validate
-          filters:
-            branches:
-              ignore: master
 
-      - publish-dev:
-          name: publish-dev-from-master
-          master: true
-          requires:
-            - validate
-          filters:
-            branches:
-              only: master
+      # - orb-tools/publish-dev:
+      #     name: publish-dev-from-master
+      #     master: true
+      #     requires:
+      #       - validate
+      #     filters:
+      #       branches:
+      #         only: master
 
       - trigger-integration:
           name: trigger-integration-dev
           requires:
-            - publish-dev-from-non-master
+            - publish-dev
+          filters:
+            branches:
+              ignore: master
 
       - trigger-integration:
           name: trigger-integration-master
           integration-branch: master
           requires:
-            - publish-dev-from-master
+            - publish-dev
+          filters:
+            branches:
+              only: master
+
 
   integrate-and-deploy:
     jobs:
@@ -136,31 +126,6 @@ workflows:
               only: /integration-master-.*/
 
 jobs:
-  lint:
-    executor: lint-condo
-    steps:
-      - checkout
-      - run: yamllint .
-
-  validate:
-    executor: cli
-    steps:
-      - checkout
-
-      - orb-tools/pack:
-          source: src
-          destination: orb.yml
-
-      - run: circleci orb validate orb.yml
-
-      - store_artifacts:
-          path: orb.yml
-
-      - persist_to_workspace:
-          root: .
-          paths:
-            - orb.yml
-
   publish-dev:
     executor: cli
     parameters:
