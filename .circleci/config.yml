@@ -36,6 +36,7 @@ workflows:
             - validate
 
       - queue/block_workflow:
+          name: queue
           consider-branch: false
           requires:
             - publish-dev
@@ -44,7 +45,7 @@ workflows:
           name: trigger-integration-dev
           context: token
           requires:
-            - queue/block_workflow
+            - queue
           filters:
             branches:
               ignore: master
