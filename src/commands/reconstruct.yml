@@ -52,7 +52,7 @@ steps:
           # functionally, 'new' means: same commit for all jobs on the branch
 
           # assume this is true, set to false if proven otherwise
-          # local BRANCH_IS_NEW=true
+          local BRANCH_IS_NEW=true
 
           # grab URL endpoints for jobs on this branch
           # transform them into single-job API endpoints
