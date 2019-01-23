@@ -5,6 +5,12 @@ orbs:
   circle-compare-url-test: iynere/compare-url@dev:alpha
   circle-compare-url: iynere/compare-url@0.4.5
 
+executors:
+  ci-base:
+    resource_class: small
+    docker:
+      - image: cibuilds/base
+
 workflows:
   version: 2
   build-and-test:
