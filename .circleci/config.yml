@@ -33,15 +33,6 @@ workflows:
           requires:
             - validate
 
-      # - orb-tools/publish-dev:
-      #     name: publish-dev-from-master
-      #     master: true
-      #     requires:
-      #       - validate
-      #     filters:
-      #       branches:
-      #         only: master
-
       - trigger-integration:
           name: trigger-integration-dev
           requires:
