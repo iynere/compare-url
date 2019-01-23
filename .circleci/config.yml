@@ -4,6 +4,7 @@ orbs:
   orb-tools: circleci/orb-tools@6.0.0
   circle-compare-url-test: iynere/compare-url@dev:alpha
   circle-compare-url: iynere/compare-url@0.4.5
+  cli: circleci/circleci-cli@0.1.2
 
 executors:
   ci-base:
@@ -193,7 +194,7 @@ jobs:
           git push origin $INTEGRATION_BRANCH
 
   dev-promote-prod:
-    executor: cli
+    executor: cli/default
     steps:
       - checkout
 
