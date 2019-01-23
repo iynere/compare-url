@@ -5,6 +5,7 @@ orbs:
   circle-compare-url-test: iynere/compare-url@dev:alpha
   circle-compare-url: iynere/compare-url@0.4.5
   cli: circleci/circleci-cli@0.1.2
+  queue: eddiewebb/queue@1.1.1
 
 executors:
   ci-base:
@@ -34,11 +35,16 @@ workflows:
           requires:
             - validate
 
+      - queue/block_workflow:
+          consider-branch: false
+          requires:
+            - publish-dev
+
       - trigger-integration:
           name: trigger-integration-dev
           context: token
           requires:
-            - publish-dev
+            - queue/block_workflow
           filters:
             branches:
               ignore: master
@@ -48,7 +54,7 @@ workflows:
           context: token
           integration-branch: master
           requires:
-            - publish-dev
+            - queue/block_workflow
           filters:
             branches:
               only: master
