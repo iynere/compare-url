@@ -26,7 +26,17 @@ parameters:
 
 steps:
   - run:
+      name: Check if CircleCI API token is set
+      command: |
+        if [ -z "$<<parameters.circle-token>>" ]; then
+            echo "WARNING: you have not set a CircleCI API token"
+            echo "if this is a private repository, the next step will fail"
+            exit 1
+        fi
+
+  - run:
       name: Reconstruct CIRCLE_COMPARE_URL
+      when: always
       command: |
         ## VARS
 
