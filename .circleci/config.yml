@@ -29,12 +29,14 @@ workflows:
 
       - orb-tools/publish-dev:
           name: publish-dev
+          context: token
           orb-name: iynere/compare-url
           requires:
             - validate
 
       - trigger-integration:
           name: trigger-integration-dev
+          context: token
           requires:
             - publish-dev
           filters:
@@ -43,6 +45,7 @@ workflows:
 
       - trigger-integration:
           name: trigger-integration-master
+          context: token
           integration-branch: master
           requires:
             - publish-dev
@@ -53,7 +56,16 @@ workflows:
   integrate-and-deploy:
     jobs:
       - circle-compare-url-test/reconstruct:
+          name: check-token-message
+          resource-class: small
+          debug: true
+          filters:
+            branches:
+              only: /integration-.*/
+
+      - circle-compare-url-test/reconstruct:
           name: integration-test
+          context: token
           resource-class: small
           debug: true
           filters:
@@ -117,8 +129,10 @@ workflows:
                   fi
 
       - dev-promote-prod:
+          context: token
           requires:
             - integration-test
+            - check-token-message
           filters:
             branches:
               only: /integration-master-.*/
