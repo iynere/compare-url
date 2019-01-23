@@ -10,6 +10,7 @@ workflows:
   build-and-test:
     jobs:
       - orb-tools/lint:
+          name: lint
           filters:
             branches:
               ignore: /integration-.*/
@@ -50,7 +51,6 @@ workflows:
           filters:
             branches:
               only: master
-
 
   integrate-and-deploy:
     jobs:
