@@ -21,7 +21,7 @@ Declare the orb in your config.yml file:
 
 ```yaml
 orbs:
-  circle-compare-url: iynere/compare-url@0.2
+  compare-url: iynere/compare-url@0.4.10
 ```
 
 Then call the orb's command or job, both called `reconstruct`:
@@ -30,7 +30,7 @@ Then call the orb's command or job, both called `reconstruct`:
 ```yaml
 steps:
   - checkout
-  - circle-compare-url/reconstruct
+  - compare-url/reconstruct
 ```
 
 ### Job usage
@@ -38,10 +38,10 @@ steps:
 workflows:
   deploy:
     jobs:
-      - circle-compare-url/reconstruct
+      - compare-url/reconstruct
       - deploy:
           requires:
-            - circle-compare-url/reconstruct
+            - compare-url/reconstruct
 ```
 
 
@@ -66,7 +66,7 @@ Refer to CircleCI's [Reusing Config](https://circleci.com/docs/2.0/reusing-confi
 ## Examples
 The below examples are drawn from [CircleCI's `circleci-orbs` monorepo](https://github.com/CircleCI-Public/circleci-orbs), where the Compare URL Orb is used to automate publishing changes to individual orbs. [See that repository's `config.yml` file](https://github.com/CircleCI-Public/circleci-orbs/blob/master/.circleci/config.yml) for a more recent iteration of what follows.
 
-By default, [every new CircleCI step runs in a fresh shell](https://circleci.com/docs/2.0/configuration-reference/#run). Thus, any environment variables stored during the `circle-compare-url/reconstruct` step would not be available to subsequent steps, without additional configuration by the end user (e.g., exporting the environment variable to a `.bash_env` and then file manually sourcing that file in any subsequent steps).
+By default, [every new CircleCI step runs in a fresh shell](https://circleci.com/docs/2.0/configuration-reference/#run). Thus, any environment variables stored during the `compare-url/reconstruct` step would not be available to subsequent steps, without additional configuration by the end user (e.g., exporting the environment variable to a `.bash_env` and then file manually sourcing that file in any subsequent steps).
 
 To mitigate this problem, the orb outputs the `$CIRCLE_COMPARE_URL` data to a file called `CIRCLE_COMPARE_URL.txt`, making it available to any subsequent steps (and even subsequent jobs, via [Workspaces](https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs)). It also persists this file, along with a `BASE_COMPARE_COMMIT.txt` file, to a workspace, for possible usage in downstream jobs.
 
@@ -77,7 +77,7 @@ Thus, as seen in the below examples, it may be necessary to save the contents of
 version: 2.1
 
 orbs:
-  compare-url: iynere/compare-url@0.2
+  compare-url: iynere/compare-url@0.4.10
 
 workflows:
   version: 2
@@ -125,7 +125,7 @@ jobs:
 version: 2.1
 
 orbs:
-  compare-url: iynere/compare-url@0.2
+  compare-url: iynere/compare-url@0.4.10
 
 workflows:
   version: 2
