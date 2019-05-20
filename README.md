@@ -21,7 +21,7 @@ Declare the orb in your config.yml file:
 
 ```yaml
 orbs:
-  circle-compare-url: iynere/compare-url@0.2
+  circle-compare-url: iynere/compare-url@x.y.z
 ```
 
 Then call the orb's command or job, both called `reconstruct`:
