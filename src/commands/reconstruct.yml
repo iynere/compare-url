@@ -29,7 +29,7 @@ steps:
       param: <<parameters.circle-token>>
       exit-if-undefined: false
       error-message: >
-        WARNING: you have not stored a CircleCI API token.
+        You have not stored a CircleCI API token.
         If this is a private repository, the next step will fail.
 
   - run:
