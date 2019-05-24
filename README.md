@@ -1,4 +1,4 @@
-# Compare URL Orb [![CircleCI status](https://circleci.com/gh/iynere/compare-url-orb.svg "CircleCI status")](https://circleci.com/gh/iynere/compare-url-orb)
+# Compare URL Orb [![CircleCI status](https://circleci.com/gh/iynere/compare-url.svg "CircleCI status")](https://circleci.com/gh/iynere/compare-url) [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/iynere/compare-url)](https://circleci.com/orbs/registry/orb/iynere/compare-url)
 CircleCI's 2.1 config processing preview disables the `$CIRCLE_COMPARE_URL` environment variable, useful when working with monorepo projects. This orb manually recreates (and slightly improves!) it.
 
 ## Functionality
@@ -21,7 +21,7 @@ Declare the orb in your config.yml file:
 
 ```yaml
 orbs:
-  circle-compare-url: iynere/compare-url@0.2
+  circle-compare-url: iynere/compare-url@x.y.z
 ```
 
 Then call the orb's command or job, both called `reconstruct`:
@@ -177,4 +177,5 @@ See CircleCI's [Creating Orbs](https://circleci.com/docs/2.0/creating-orbs/) doc
 
 This orb has only minimal testing—issues, pull requests, or other suggestions are welcome towards the goal of improving test depth/coverage.
 
-See [Testing orbs](https://github.com/CircleCI-Public/config-preview-sdk/blob/master/docs/orbs-testing.md) from CircleCI's 2.1 config preview SDK, or [this Discuss thread](https://discuss.circleci.com/t/testing-orbs), for further discussion of emerging orb testing best practices.
+See [Creating automated build, test, and deploy workflows for orbs, part 1](https://circleci.com/blog/creating-automated-build-test-and-deploy-workflows-for-orbs/) and [
+Creating automated build, test, and deploy workflows for orbs, part 2](https://circleci.com/blog/creating-automated-build-test-and-deploy-workflows-for-orbs-part-2/) for more information on automated orb testing/deployment.
