@@ -25,15 +25,12 @@ parameters:
     default: false
 
 steps:
-  - run:
-      name: Check if CircleCI API token is set
-      command: |
-        if [[ -z "$<<parameters.circle-token>>" ]]; then
-          echo "WARNING: you have not stored a CircleCI API token"
-          echo "if this is a private repository, the next step will fail"
-        else
-          echo "You have stored a CircleCI API token"
-        fi
+  - orb-tools/check-env-var-param:
+      param: <<parameters.circle-token>>
+      exit-if-undefined: false
+      error-message: >
+        You have not stored a CircleCI API token.
+        If this is a private repository, the next step will fail.
 
   - run:
       name: Reconstruct CIRCLE_COMPARE_URL

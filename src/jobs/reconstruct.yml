@@ -32,8 +32,10 @@ parameters:
     type: boolean
     default: false
 
-executor: ci-base
+executor: orb-tools/alpine
+
 resource_class: <<parameters.resource-class>>
+
 steps:
   - checkout
 

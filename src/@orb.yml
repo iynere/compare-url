@@ -4,7 +4,5 @@ description: >
   Reconstruct $CIRCLE_COMPARE_URL environment variable.
   (See https://github.com/iynere/compare-url-orb for full README.)
 
-executors:
-  ci-base:
-    docker:
-      - image: cibuilds/base
+orbs:
+  orb-tools: circleci/orb-tools@8.12.0
