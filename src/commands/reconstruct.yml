@@ -27,6 +27,7 @@ parameters:
 steps:
   - orb-tools/check-env-var-param:
       param: <<parameters.circle-token>>
+      exit-if-undefined: false
       error-message: >
         WARNING: you have not stored a CircleCI API token.
         If this is a private repository, the next step will fail.

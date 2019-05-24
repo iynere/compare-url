@@ -5,4 +5,4 @@ description: >
   (See https://github.com/iynere/compare-url-orb for full README.)
 
 orbs:
-  orb-tools: circleci/orb-tools@8.11.0
+  orb-tools: circleci/orb-tools@8.12.0
