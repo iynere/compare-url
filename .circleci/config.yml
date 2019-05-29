@@ -88,9 +88,9 @@ workflows:
             - circle-compare-url-test/reconstruct:
                 debug: true
 
-            - run:
-                name: copy command output for later comparision
-                command: |
+            - circle-compare-url-test/use:
+                step-name: copy command output for later comparision
+                custom-logic: |
                   mv BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-command.txt
                   cp CIRCLE_COMPARE_URL.txt CIRCLE_COMPARE_URL-command.txt
 
@@ -211,15 +211,9 @@ jobs:
       - circle-compare-url/reconstruct:
           debug: true
 
-      - run:
-          name: major release if changes to src/commands or src/jobs, minor if to src/examples or src/@orb.yml, otherwise patch
-          command: |
-            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
-
-            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-
-            echo "Commit range: $COMMIT_RANGE"
-
+      - circle-compare-url/use:
+          step-name: major release if changes to src/commands or src/jobs, minor if to src/examples or src/@orb.yml, otherwise patch
+          custom-logic: |
             if [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/commands" -e "src/jobs") ]]; then
               circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} major --token $CIRCLE_TOKEN
             elif [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/examples" -e "src/@orb.yml") ]]; then
