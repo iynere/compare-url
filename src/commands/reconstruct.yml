@@ -13,8 +13,8 @@ parameters:
 
   project-path:
     description: >
-      Absolute path to your project's base directory,
-      necessary for running git commands
+      Absolute path to your project's base directory, necessary for
+      running git commands
     type: string
     default: ~/project
 
