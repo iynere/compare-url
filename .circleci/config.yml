@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   circle-compare-url-test: iynere/compare-url@dev:alpha
-  circle-compare-url: iynere/compare-url@1.0.2
+  circle-compare-url: iynere/compare-url@1.1.0
   cli: circleci/circleci-cli@0.1.2
   orb-tools: circleci/orb-tools@8.13.1
   queue: eddiewebb/queue@1.1.1
@@ -50,7 +50,7 @@ jobs:
       - circle-compare-url/reconstruct:
           debug: true
 
-      - circle-compare-url-test/use:
+      - circle-compare-url/use:
           step-name: major release if new commands or jobs, minor if changes to commands or jobs, patch if changes to examples, executors, @orb.yml, otherwise none
           custom-logic: |
             if [[ $(git diff $COMMIT_RANGE --name-status | \
@@ -155,7 +155,7 @@ workflows:
             - circle-compare-url-test/reconstruct:
                 debug: true
 
-            - circle-compare-url-test/use:
+            - circle-compare-url/use:
                 step-name: copy command output for later comparision
                 custom-logic: |
                   mv BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-command.txt
