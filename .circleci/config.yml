@@ -52,7 +52,7 @@ jobs:
       - circle-compare-url/reconstruct:
           debug: true
 
-      - circle-compare-url-alpha/use:
+      - circle-compare-url-test/use:
           step-name: major release if new commands or jobs, minor if changes to commands or jobs, patch if changes to examples, executors, @orb.yml, otherwise none
           custom-logic: |
             if [[ $(git diff $COMMIT_RANGE --name-status | \
