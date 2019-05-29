@@ -9,16 +9,7 @@ usage:
   version: 2.1
 
   orbs:
-    compare-url: iynere/compare-url@0.2
-
-  workflows:
-    version: 2
-    publish-orbs:
-      jobs:
-        - compare-url/reconstruct
-        - publish:
-            requires:
-              - compare-url/reconstruct
+    compare-url: iynere/compare-url@x.y.z
 
   jobs:
     publish:
@@ -27,20 +18,10 @@ usage:
       steps:
         - checkout
 
-        - attach_workspace:
-            at: workspace
-
-        - run:
-            name: Publish modified orbs
-            shell: /bin/bash -exo pipefail
+        - compare-url/use:
+            step-name: Publish modified orbs
+            attach-workspace: true
             command: |
-              # save value stored in file to a local env var
-              CIRCLE_COMPARE_URL=$(cat workspace/CIRCLE_COMPARE_URL.txt)
-
-              COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-
-              echo "Commit range: $COMMIT_RANGE"
-
               for ORB in folder-containing-orb-subdirs/*/; do
 
                 orbname=$(basename $ORB)
@@ -54,3 +35,11 @@ usage:
                   echo "${orbname} not modified; no need to publish"
                 fi
               done
+
+  workflows:
+    publish-orbs:
+      jobs:
+        - compare-url/reconstruct
+        - publish:
+            requires:
+              - compare-url/reconstruct

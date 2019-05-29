@@ -1,0 +1,56 @@
+description: >
+  Use the CIRCLE_COMPARE_URL created in the `reconstruct` command (or
+  job) to do some parameterized logic/work. Designed to be run after the
+  `reconstruct` command, or in a job downstream from the `reconstruct`
+  job. Saves CIRCLE_COMPARE_URL value stored in file to a local
+  environment variable and transforms it into a true commit range value
+  (stored as a COMMIT_RANGE environment variable), ready to be utilized
+  as desired.
+
+parameters:
+  step-name:
+    type: string
+    default: Evaluate/use CIRCLE_COMPARE_URL
+    description: Specify a custom step name for this command, if desired
+
+  attach-workspace:
+    type: boolean
+    default: false
+    description: >
+      Attach a workspace for this command to use? Useful when this orb's
+      `reconstruct` job is called upstream in a given workflow
+
+  workspace-root:
+    type: string
+    default: "."
+    description: >
+      Workspace root path (either an absolute path or a path relative
+      to the working directory), defaults to "." (the working directory)
+
+  custom-logic:
+    type: string
+    default: echo "What should COMMIT_RANGE ($COMMIT_RANGE) be used for?"
+    description: >
+      What should be done with the commit information created by the
+      `reconstruct` command/job? For an example, see the following:
+      https://circleci.com/orbs/registry/orb/iynere/compare-url#usage-simple-monorepo-flow-using-command
+
+steps:
+  - when:
+      condition: <<parameters.attach-workspace>>
+      steps:
+        - attach_workspace:
+            at: <<parameters.workspace-root>>
+
+  - run:
+      name: <<parameters.step-name>>
+      command: |
+        # save value stored in file to a local env var
+        CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+
+        COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+
+        echo "Commit range: $COMMIT_RANGE"
+
+        <<parameters.custom-logic>>
+

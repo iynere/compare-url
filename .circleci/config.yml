@@ -1,45 +1,113 @@
 version: 2.1
 
 orbs:
-  orb-tools: circleci/orb-tools@8.11.0
   circle-compare-url-test: iynere/compare-url@dev:alpha
-  circle-compare-url: iynere/compare-url@1.0.0
+  circle-compare-url: iynere/compare-url@1.0.2
   cli: circleci/circleci-cli@0.1.2
+  orb-tools: circleci/orb-tools@8.13.1
   queue: eddiewebb/queue@1.1.1
+
+jobs:
+  trigger-integration:
+    executor: orb-tools/alpine
+    parameters:
+      integration-branch:
+        type: enum
+        enum: [dev, master]
+        default: dev
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints: ["b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"]
+
+      - run:
+          name: git config
+          command: |
+            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+            git config --global user.name "$CIRCLE_USERNAME"
+
+      - run:
+          name: trigger integration
+          command: |
+            if [[ $CIRCLE_BRANCH == "master" ]]; then
+              INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-${CIRCLE_SHA1:0:7}
+            else
+              INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}
+            fi
+
+            git checkout -b $INTEGRATION_BRANCH
+            git push origin $INTEGRATION_BRANCH
+
+  dev-promote-prod:
+    executor: cli/default
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints: ["b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"]
+
+      - circle-compare-url/reconstruct:
+          debug: true
+
+      - circle-compare-url-test/use:
+          step-name: major release if new commands or jobs, minor if changes to commands or jobs, patch if changes to examples, executors, @orb.yml, otherwise none
+          custom-logic: |
+            if [[ $(git diff $COMMIT_RANGE --name-status | \
+                grep -e "A      src/commands" -e "A      src/jobs") ]]; then
+              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} major --token $CIRCLE_TOKEN
+            elif [[ $(git diff $COMMIT_RANGE --name-status | \
+                grep -e "src/commands" -e "src/jobs") ]]; then
+              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
+            elif [[ $(git diff $COMMIT_RANGE --name-status | \
+                grep -e "src/examples" -e "src/executors" -e "src/@orb.yml") ]]; then
+              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+            else
+              echo "No changes to orb source; skipping publishing"
+            fi
+
+      - run:
+          when: always
+          name: git config
+          command: |
+            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+            git config --global user.name "$CIRCLE_USERNAME"
+
+      - run:
+          when: always
+          name: cleanup branch
+          command: git push origin --delete $CIRCLE_BRANCH
+
 
 workflows:
   version: 2
   build-and-test:
     jobs:
       - orb-tools/lint:
-          name: lint
           filters:
             branches:
               ignore: /integration-.*/
 
       - orb-tools/pack:
-          name: validate
           requires:
-            - lint
+            - orb-tools/lint
 
       - orb-tools/publish-dev:
-          name: publish-dev
           context: token
           orb-name: iynere/compare-url
           requires:
-            - validate
+            - orb-tools/pack
 
       - queue/block_workflow:
-          name: queue
           consider-branch: false
           requires:
-            - publish-dev
+            - orb-tools/publish-dev
 
       - trigger-integration:
           name: trigger-integration-dev
           context: token
           requires:
-            - queue
+            - queue/block_workflow
           filters:
             branches:
               ignore: master
@@ -49,7 +117,7 @@ workflows:
           context: token
           integration-branch: master
           requires:
-            - queue
+            - queue/block_workflow
           filters:
             branches:
               only: master
@@ -75,8 +143,7 @@ workflows:
 
           pre-steps:
             - add_ssh_keys:
-                fingerprints:
-                  - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
+                fingerprints: ["b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"]
 
           post-steps:
             - run:
@@ -88,9 +155,9 @@ workflows:
             - circle-compare-url-test/reconstruct:
                 debug: true
 
-            - run:
-                name: copy command output for later comparision
-                command: |
+            - circle-compare-url-test/use:
+                step-name: copy command output for later comparision
+                custom-logic: |
                   mv BASE_COMPARE_COMMIT.txt BASE_COMPARE_COMMIT-command.txt
                   cp CIRCLE_COMPARE_URL.txt CIRCLE_COMPARE_URL-command.txt
 
@@ -131,111 +198,7 @@ workflows:
 
       - dev-promote-prod:
           context: token
-          requires:
-            - integration-test
-            - check-token-message
+          requires: [integration-test, check-token-message]
           filters:
             branches:
               only: /integration-master-.*/
-
-jobs:
-  publish-dev:
-    executor: cli
-    parameters:
-      master:
-        type: boolean
-        default: false
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: workspace
-
-      - run:
-          name: always publish w/branch & sha (for transparency)
-          command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
-
-      - run:
-          name: always publish alpha (for immediate integration testing)
-          command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:alpha --token $CIRCLE_TOKEN
-
-      - when:
-          condition: <<parameters.master>>
-          steps:
-            - run:
-                name: publish w/just sha, for possible prod promotion (assuming tests pass)
-                command: circleci orb publish workspace/orb.yml iynere/compare-url@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
-
-      - store_artifacts:
-          path: workspace/orb.yml
-
-  trigger-integration:
-    executor: orb-tools/alpine
-    parameters:
-      integration-branch:
-        type: enum
-        enum: ["dev", master]
-        default: "dev"
-    steps:
-      - checkout
-
-      - add_ssh_keys:
-          fingerprints:
-            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
-
-      - run:
-          name: git config
-          command: |
-            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
-            git config --global user.name "$CIRCLE_USERNAME"
-
-      - run: |
-          if [[ $CIRCLE_BRANCH == "master" ]]; then
-            INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-${CIRCLE_SHA1:0:7}
-          else
-            INTEGRATION_BRANCH=integration-<<parameters.integration-branch>>-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}
-          fi
-
-          git checkout -b $INTEGRATION_BRANCH
-          git push origin $INTEGRATION_BRANCH
-
-  dev-promote-prod:
-    executor: cli/default
-    steps:
-      - checkout
-
-      - add_ssh_keys:
-          fingerprints:
-            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
-
-      - circle-compare-url/reconstruct:
-          debug: true
-
-      - run:
-          name: major release if changes to src/commands or src/jobs, minor if to src/examples or src/@orb.yml, otherwise patch
-          command: |
-            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
-
-            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-
-            echo "Commit range: $COMMIT_RANGE"
-
-            if [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/commands" -e "src/jobs") ]]; then
-              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} major --token $CIRCLE_TOKEN
-            elif [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/examples" -e "src/@orb.yml") ]]; then
-              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
-            else
-              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
-            fi
-
-      - run:
-          when: always
-          name: git config
-          command: |
-            git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
-            git config --global user.name "$CIRCLE_USERNAME"
-
-      - run:
-          when: always
-          name: cleanup branch
-          command: git push origin --delete $CIRCLE_BRANCH
