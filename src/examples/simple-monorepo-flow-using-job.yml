@@ -11,15 +11,6 @@ usage:
   orbs:
     compare-url: iynere/compare-url@x.y.z
 
-  workflows:
-    version: 2
-    publish-orbs:
-      jobs:
-        - compare-url/reconstruct
-        - publish:
-            requires:
-              - compare-url/reconstruct
-
   jobs:
     publish:
       docker:
@@ -44,3 +35,11 @@ usage:
                   echo "${orbname} not modified; no need to publish"
                 fi
               done
+
+  workflows:
+    publish-orbs:
+      jobs:
+        - compare-url/reconstruct
+        - publish:
+            requires:
+              - compare-url/reconstruct

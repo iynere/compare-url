@@ -24,7 +24,7 @@ orbs:
   circle-compare-url: iynere/compare-url@x.y.z
 ```
 
-Then call the orb's command or job, both called `reconstruct`:
+Then call the orb's `reconstruct` command or job:
 
 ### Command usage
 ```yaml
@@ -44,10 +44,25 @@ workflows:
             - circle-compare-url/reconstruct
 ```
 
+### `use` command
+Finally, the `circle-compare-url/use` command saves the `CIRCLE_COMPARE_URL` value, previously stored in file, to a local environment variable and transforms it into a true commit range value (stored as a `COMMIT_RANGE` environment variable), ready to be utilized as desired:
 
+```yaml
+- circle-compare-url/use:
+    step-name: Desired step name to display on CircleCI
+    attach-workspace: # set this to `true` if `reconstruct` was called as a job; default is `false`
+    custom-logic: |
+      # what would you like to do with the $CIRCLE_COMPARE_URL/$COMMIT_RANGE values?
+      # this typically involves some kind of dynamic decision-making about release types,
+      # based on what level of changes were made to your source code between the base commit and the current commit
+      # for examples, see below
+
+```
 
 ## Parameters
-The orb's command and job both take three optional parameters:
+
+### `reconstruct`
+The orb's `reconstruct` command and job both take three optional parameters:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -61,6 +76,16 @@ Its job also takes an optional fourth paramater, which allows users to run the j
 |-----------|------|---------|-------------|
 | `resource-class` | `enum` | `medium` | Container size for `reconstruct` job (`["small", "medium"]`)
 
+### `use`
+The `use` command also takes three optional parameters and one that is technically optional but typically required:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `step-name` | `string` | Evaluate/use CIRCLE_COMPARE_URL | Specify a custom step name for this command, if desired |
+| `attach-workspace` | `boolean` | `false` | Attach a workspace for this command to use? Useful when this orb's `reconstruct` job is called upstream in a given workflow |
+| `workspace-root` | `string` | "." | Workspace root path (either an absolute path or a path relative to the working directory), defaults to "." (the working directory) |
+| `custom-logic` | `string` | echo "What should COMMIT_RANGE ($COMMIT_RANGE) be used for?" | What should be done with the commit information created by the `reconstruct` command/job? [See examples in the orb registry](https://circleci.com/orbs/registry/orb/iynere/compare-url) (or [below](#examples)) |
+
 Refer to CircleCI's [Reusing Config](https://circleci.com/docs/2.0/reusing-config/#using-the-parameters-declaration) documentation for additional information about parameters.
 
 ## Examples
@@ -73,17 +98,11 @@ To mitigate this problem, the orb outputs the `$CIRCLE_COMPARE_URL` data to a fi
 Thus, as seen in the below examples, it may be necessary to save the contents of the `CIRCLE_COMPARE_URL.txt` file as a (step-localized) environment variable in any steps that will make use of the compare URL.
 
 ### Command example
-```
+```yaml
 version: 2.1
 
 orbs:
-  compare-url: iynere/compare-url@0.2
-
-workflows:
-  version: 2
-  publish-orbs:
-    jobs:
-      - publish
+  compare-url: iynere/compare-url@x.y.z
 
 jobs:
   publish:
@@ -94,17 +113,9 @@ jobs:
 
       - compare-url/reconstruct
 
-      - run:
-          name: Publish modified orbs
-          shell: /bin/bash -exo pipefail
-          command: |
-            # save value stored in file to a local env var
-            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
-
-            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-
-            echo "Commit range: $COMMIT_RANGE"
-
+      - compare-url/use:
+          step-name: Publish modified orbs
+          custom-logic: |
             for ORB in folder-containing-orb-subdirs/*/; do
 
               orbname=$(basename $ORB)
@@ -118,58 +129,52 @@ jobs:
                 echo "${orbname} not modified; no need to publish"
               fi
             done
+
+workflows:
+  publish-orbs:
+    jobs:
+      - publish
 ```
 
 ### Job example
-```
+```yaml
 version: 2.1
 
 orbs:
-  compare-url: iynere/compare-url@0.2
+  compare-url: iynere/compare-url@x.y.z
+
+jobs:
+  publish:
+    docker:
+      - image: circleci/circleci-cli
+    steps:
+      - checkout
+
+      - compare-url/use:
+          step-name: Publish modified orbs
+          attach-workspace: true
+          command: |
+            for ORB in folder-containing-orb-subdirs/*/; do
+
+              orbname=$(basename $ORB)
+
+              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
+
+                echo "publishing ${orbname}"
+
+                circleci orb publish ${ORB}/orb.yml namespace/${orbname}@version
+              else
+                echo "${orbname} not modified; no need to publish"
+              fi
+            done
 
 workflows:
-  version: 2
   publish-orbs:
     jobs:
       - compare-url/reconstruct
       - publish:
           requires:
             - compare-url/reconstruct
-
-jobs:
-  publish:
-    docker:
-      - image: circleci/circleci-cli
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: workspace
-
-      - run:
-          name: Publish modified orbs
-          shell: /bin/bash -exo pipefail
-          command: |
-            # save value stored in file to a local env var
-            CIRCLE_COMPARE_URL=$(cat workspace/CIRCLE_COMPARE_URL.txt)
-
-            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-
-            echo "Commit range: $COMMIT_RANGE"
-
-            for ORB in folder-containing-orb-subdirs/*/; do
-
-              orbname=$(basename $ORB)
-
-              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
-
-                echo "publishing ${orbname}"
-
-                circleci orb publish ${ORB}/orb.yml namespace/${orbname}@version
-              else
-                echo "${orbname} not modified; no need to publish"
-              fi
-            done
 ```
 
 ## Contributing
