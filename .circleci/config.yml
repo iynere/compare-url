@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  orb-tools: circleci/orb-tools@8.11.0
+  orb-tools: circleci/orb-tools@8.13.1
   circle-compare-url-test: iynere/compare-url@dev:alpha
   circle-compare-url: iynere/compare-url@1.0.0
   cli: circleci/circleci-cli@0.1.2
@@ -211,16 +211,16 @@ jobs:
       - circle-compare-url/reconstruct:
           debug: true
 
-      - circle-compare-url/use:
-          step-name: major release if changes to src/commands or src/jobs, minor if to src/examples or src/@orb.yml, otherwise patch
-          custom-logic: |
-            if [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/commands" -e "src/jobs") ]]; then
-              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} major --token $CIRCLE_TOKEN
-            elif [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/examples" -e "src/@orb.yml") ]]; then
-              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
-            else
-              circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
-            fi
+      # - circle-compare-url/use:
+      #     step-name: major release if changes to src/commands or src/jobs, minor if to src/examples or src/@orb.yml, otherwise patch
+      #     custom-logic: |
+      #       if [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/commands" -e "src/jobs") ]]; then
+      #         circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} major --token $CIRCLE_TOKEN
+      #       elif [[ $(git diff $COMMIT_RANGE --name-status | grep -e "src/examples" -e "src/@orb.yml") ]]; then
+      #         circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} minor --token $CIRCLE_TOKEN
+      #       else
+      #         circleci orb publish promote iynere/compare-url@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+      #       fi
 
       - run:
           when: always
