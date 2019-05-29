@@ -9,7 +9,7 @@ usage:
   version: 2.1
 
   orbs:
-    compare-url: iynere/compare-url@0.2
+    compare-url: iynere/compare-url@x.y.z
 
   workflows:
     version: 2
@@ -26,17 +26,9 @@ usage:
 
         - compare-url/reconstruct
 
-        - run:
-            name: Publish modified orbs
-            shell: /bin/bash -exo pipefail
-            command: |
-              # save value stored in file to a local env var
-              CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
-
-              COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-
-              echo "Commit range: $COMMIT_RANGE"
-
+        - compare-url/use:
+            step-name: Publish modified orbs
+            custom-logic: |
               for ORB in folder-containing-orb-subdirs/*/; do
 
                 orbname=$(basename $ORB)

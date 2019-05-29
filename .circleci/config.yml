@@ -1,10 +1,10 @@
 version: 2.1
 
 orbs:
-  orb-tools: circleci/orb-tools@8.13.1
   circle-compare-url-test: iynere/compare-url@dev:alpha
-  circle-compare-url: iynere/compare-url@1.0.0
+  circle-compare-url: iynere/compare-url@1.0.2
   cli: circleci/circleci-cli@0.1.2
+  orb-tools: circleci/orb-tools@8.13.1
   queue: eddiewebb/queue@1.1.1
 
 jobs:
@@ -19,8 +19,7 @@ jobs:
       - checkout
 
       - add_ssh_keys:
-          fingerprints:
-            - "b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54"
+          fingerprints: [b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54]
 
       - run:
           name: git config
@@ -46,8 +45,7 @@ jobs:
       - checkout
 
       - add_ssh_keys:
-          fingerprints:
-            - b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54
+          fingerprints: [b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54]
 
       - circle-compare-url/reconstruct:
           debug: true
@@ -145,8 +143,7 @@ workflows:
 
           pre-steps:
             - add_ssh_keys:
-                fingerprints:
-                  - b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54
+                fingerprints: [b2:c0:00:a5:2e:87:cf:ac:5b:90:67:85:09:8c:c8:54]
 
           post-steps:
             - run:

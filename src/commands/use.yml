@@ -2,7 +2,10 @@ description: >
   Use the CIRCLE_COMPARE_URL created in the `reconstruct` command (or
   job) to do some parameterized logic/work. Designed to be run after the
   `reconstruct` command, or in a job downstream from the `reconstruct`
-  job.
+  job. Saves CIRCLE_COMPARE_URL value stored in file to a local
+  environment variable and transforms it into a true commit range value
+  (stored as a COMMIT_RANGE environment variable), ready to be utilized
+  as desired.
 
 parameters:
   step-name:
