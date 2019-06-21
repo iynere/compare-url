@@ -24,6 +24,15 @@ parameters:
     type: boolean
     default: false
 
+  when:
+    description: When this command should run
+    type: enum
+    default: always
+    enum:
+      - always
+      - on_success
+      - on_fail
+
 steps:
   - orb-tools/check-env-var-param:
       param: <<parameters.circle-token>>
@@ -34,7 +43,7 @@ steps:
 
   - run:
       name: Reconstruct CIRCLE_COMPARE_URL
-      when: always
+      when: <<parameters.when>>
       command: |
         ## VARS
 
