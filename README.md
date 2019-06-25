@@ -69,6 +69,7 @@ The orb's `reconstruct` command and job both take three optional parameters:
 | `circle-token` | `env_var_name` | `CIRCLE_TOKEN` | Name of environment variable storing your CircleCI API token |
 | `project-path` | `string` | `~/project` | Absolute path to your project's base directory, for running `git` commands |
 | `debug` | boolean | `false` | Additional debugging output for folks developing the orb |
+| `when` | `enum` | `always` | Specify when this command will run ([`always`, `on_fail`, `on_success`]) |
 
 Its job also takes an optional fourth paramater, which allows users to run the job in a [smaller container](https://circleci.com/docs/2.0/configuration-reference/#resource_class) to conserve resources:
 
