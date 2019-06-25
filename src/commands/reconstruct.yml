@@ -6,32 +6,27 @@ description: >
 
 parameters:
   circle-token:
-    description: >
-      Your CircleCI API token, defaults to $CIRCLE_TOKEN
     type: env_var_name
     default: CIRCLE_TOKEN
+    description: Your CircleCI API token, defaults to $CIRCLE_TOKEN
 
   project-path:
+    type: string
+    default: ~/project
     description: >
       Absolute path to your project's base directory, necessary for
       running git commands
-    type: string
-    default: ~/project
 
   debug:
-    description: >
-      Additional debugging output for folks developing the orb
     type: boolean
     default: false
+    description: Additional debugging output for folks developing the orb
 
   when:
-    description: When this command should run
     type: enum
+    enum: [always, on_success, on_fail]
     default: always
-    enum:
-      - always
-      - on_success
-      - on_fail
+    description: When should this command run?
 
 steps:
   - orb-tools/check-env-var-param:
