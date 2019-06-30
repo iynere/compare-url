@@ -86,6 +86,7 @@ The `use` command also takes three optional parameters and one that is technical
 | `attach-workspace` | `boolean` | `false` | Attach a workspace for this command to use? Useful when this orb's `reconstruct` job is called upstream in a given workflow |
 | `workspace-root` | `string` | "." | Workspace root path (either an absolute path or a path relative to the working directory), defaults to "." (the working directory) |
 | `custom-logic` | `string` | echo "What should COMMIT_RANGE ($COMMIT_RANGE) be used for?" | What should be done with the commit information created by the `reconstruct` command/job? [See examples in the orb registry](https://circleci.com/orbs/registry/orb/iynere/compare-url) (or [below](#examples)) |
+| `shell-options` | `string` | /bin/bash -eo pipefail | The shell options for `custom-loginc`. Default is `/bin/bash -eo pipefail`. See the document for [using shell scripts](https://circleci.com/docs/2.0/using-shell-scripts/). |
 
 Refer to CircleCI's [Reusing Config](https://circleci.com/docs/2.0/reusing-config/#using-the-parameters-declaration) documentation for additional information about parameters.
 
@@ -116,6 +117,7 @@ jobs:
 
       - compare-url/use:
           step-name: Publish modified orbs
+          shell-options: /bin/sh -ueo pipefail
           custom-logic: |
             for ORB in folder-containing-orb-subdirs/*/; do
 

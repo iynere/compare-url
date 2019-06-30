@@ -22,6 +22,7 @@ usage:
 
         - compare-url/use:
             step-name: Publish modified orbs
+            shell-options: /bin/sh -ueo pipefail
             custom-logic: |
               for ORB in folder-containing-orb-subdirs/*/; do
 
