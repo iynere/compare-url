@@ -35,6 +35,13 @@ parameters:
       `reconstruct` command/job? For an example, see the following:
       https://circleci.com/orbs/registry/orb/iynere/compare-url#usage-simple-monorepo-flow-using-command
 
+  shell-options:
+    type: string
+    default: /bin/bash -eo pipefail
+    description: >
+      The shell options for `custom-loginc`. Default is `/bin/bash -eo pipefail`.
+      See the following: https://circleci.com/docs/2.0/using-shell-scripts/
+
 steps:
   - when:
       condition: <<parameters.attach-workspace>>
@@ -44,6 +51,7 @@ steps:
 
   - run:
       name: <<parameters.step-name>>
+      shell: <<parameters.shell-options>>
       command: |
         # save value stored in file to a local env var
         CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
