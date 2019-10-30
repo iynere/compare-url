@@ -171,6 +171,12 @@ steps:
               echo "----------------------------------------------------------------------------------------------------"
               JOB_NUM=$(( $JOB_NUM - 1 ))
               continue
+            elif [[ $RETURN_CODE == 128 ]]; then
+              echo "----------------------------------------------------------------------------------------------------"
+              echo "commit $COMMIT_FROM_JOB_NUM from job $JOB_NUM was not found"
+              echo "----------------------------------------------------------------------------------------------------"
+              JOB_NUM=$(( $JOB_NUM - 1 ))
+              continue
             elif [[ $RETURN_CODE == "" ]]; then
               echo "----------------------------------------------------------------------------------------------------"
               echo "commit $COMMIT_FROM_JOB_NUM from job $JOB_NUM is an ancestor of the current commit"
