@@ -177,6 +177,12 @@ steps:
               echo "----------------------------------------------------------------------------------------------------"
               FOUND_BASE_COMPARE_COMMIT=true
               break
+            elif [[ $RETURN_CODE == 128 ]]; then
+              echo "----------------------------------------------------------------------------------------------------"
+              echo "commit $COMMIT_FROM_JOB_NUM from job $JOB_NUM no longer exists"
+              echo "----------------------------------------------------------------------------------------------------"
+              JOB_NUM=$(( $JOB_NUM - 1 ))
+              continue
             else
               echo "unknown return code $RETURN_CODE from git merge-base with base commit $COMMIT_FROM_JOB_NUM, from job $JOB_NUM"
               exit 1
@@ -195,11 +201,27 @@ steps:
               # (we've already ruled out that this is a brand-new branch)
               $(grep "\"branch\" : \"$CIRCLE_BRANCH\"" JOB_OUTPUT) ]]; then
 
-              echo "----------------------------------------------------------------------------------------------------"
-              echo "success! job $JOB_NUM was neither part of the current workflow, part of a rerun workflow, a retry of a previous job, nor from a different branch"
-              echo "----------------------------------------------------------------------------------------------------"
+              COMMIT_FROM_JOB_NUM=$(extract_commit_from_job $VCS_TYPE $JOB_NUM)
 
-              FOUND_BASE_COMPARE_COMMIT=true
+              # check if commit from JOB_NUM is still an ancestor of $CIRCLE_SHA1
+              git merge-base --is-ancestor $COMMIT_FROM_JOB_NUM $CIRCLE_SHA1; RETURN_CODE=$?
+
+              if [[ $RETURN_CODE == 0 ]]; then
+
+                echo "----------------------------------------------------------------------------------------------------"
+                echo "success! job $JOB_NUM was neither part of the current workflow, part of a rerun workflow, a retry of a previous job, nor from a different branch"
+                echo "----------------------------------------------------------------------------------------------------"
+
+                FOUND_BASE_COMPARE_COMMIT=true
+                break
+              else
+                echo "----------------------------------------------------------------------------------------------------"
+                echo "commit $COMMIT_FROM_JOB_NUM from job $JOB_NUM is attached to the same branch as the current commit, but history has been rewritten since. Might as well consider the current branch as a new one."
+                echo "----------------------------------------------------------------------------------------------------"
+                JOB_NUM=$(( $JOB_NUM - 1 ))
+                BRANCH_IS_NEW=true
+                continue
+              fi
             else
               echo "----------------------------------------------------------------------------------------------------"
               echo "job $JOB_NUM was part of the current workflow, part of a rerun workflow, a retry of a previous job, or from a different branch"
